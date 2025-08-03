@@ -1,0 +1,898 @@
+<!DOCTYPE html>  
+<html lang="zh">  
+<head>  
+  <meta charset="UTF-8" />  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+  <title>业余无线电点名记录工具</title>  
+  <!-- 引入SheetJS库用于Excel操作 -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.min.js"></script>
+  
+  <!-- 页面样式 -->
+  <style>  
+    :root {  
+      --bg: #f2f7fd;  
+      --fg: #222;  
+      --card-bg: #ffffff;  
+      --btn-bg: #2196f3;  
+      --btn-fg: #fff;  
+      --input-bg: #ffffff;  
+      --accent: #2196f3;  
+    }  
+    body.dark {  
+      --bg: #121212;  
+      --fg: #ddd;  
+      --card-bg: #1e1e1e;  
+      --btn-bg: #0d47a1;  
+      --btn-fg: #fff;  
+      --input-bg: #333;  
+      --accent: #90caf9;  
+    }  
+    body {  
+      margin: 0;  
+      padding: 2em 1em;  
+      background-color: var(--bg);  
+      color: var(--fg);  
+      font-family: 'Segoe UI', sans-serif;  
+      transition: background-color 0.5s ease, color 0.5s ease;  
+    }  
+    body, .card, table, th, td, h2, h3, input, select, button {  
+      transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;  
+    }  
+    .container {  
+      max-width: 1000px;  
+      margin: auto;  
+    }  
+    .card {  
+      background: var(--card-bg);  
+      padding: 1.5em;  
+      border-radius: 12px;  
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);  
+      margin-bottom: 2em;  
+    }  
+    h2, h3 {  
+      text-align: center;  
+      color: var(--accent);  
+    }  
+    .form-row {  
+      display: flex;  
+      flex-wrap: wrap;  
+      gap: 1em;  
+      margin-bottom: 1em;  
+    }  
+    input, select, button {  
+      padding: 0.5em;  
+      border: 1px solid #ccc;  
+      border-radius: 6px;  
+      font-size: 1em;  
+      background: var(--input-bg);  
+      color: var(--fg);  
+      flex: 1;  
+    }  
+    input[type="file"] {  
+      border: none;  
+      width: 150px;  
+      flex: none;  
+    }  
+    button {  
+      background-color: var(--btn-bg);  
+      color: var(--btn-fg);  
+      cursor: pointer;  
+      transition: background 0.3s ease;  
+      -webkit-tap-highlight-color: transparent; /* 移除Android点击高亮 */  
+    }  
+    button:hover {  
+      background-color: #1976d2;  
+    }  
+    button:focus {  
+      outline: none;  
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.5); /* 淡蓝色光晕 */  
+    }  
+    .table-wrapper {  
+      overflow-x: auto;  
+    }  
+    table {  
+      width: 100%;  
+      min-width: 800px;  
+      border-collapse: collapse;  
+      margin-top: 1em;  
+    }  
+    th, td {  
+      border: 1px solid #ccc;  
+      padding: 0.5em;  
+      text-align: center;  
+    }  
+    #darkToggle {  
+      position: fixed;  
+      top: 1em;  
+      right: 1em;  
+      width: 36px;  
+      height: 36px;  
+      background: var(--btn-bg);  
+      color: var(--btn-fg);  
+      border: none;  
+      border-radius: 50%;  
+      display: flex;  
+      align-items: center;  
+      justify-content: center;  
+      cursor: pointer;  
+      transition: background-color 0.5s ease, color 0.5s ease;  
+    }  
+    #darkToggle svg {  
+      width: 20px;  
+      height: 20px;  
+      fill: var(--btn-fg);  
+      transition: fill 0.5s ease;  
+    }  
+    input,  
+    textarea,  
+    select {  
+      outline: none;  
+      box-shadow: none;  
+      transition: box-shadow 0.2s ease;  
+    }  
+    input:focus,  
+    textarea:focus,  
+    select:focus {  
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.5); /* 淡蓝光晕 */  
+    }  
+    input,
+    textarea,
+    select {
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+    /* 浅色模式 */
+    input {
+      background-color: white;
+      color: black;
+      border: 1px solid #ccc;
+    }
+
+    /* 深色模式 */
+    .dark input {
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+      border: 1px solid #555;
+    }
+  </style>  
+</head>  
+<body>  
+  <button id="darkToggle" onclick="toggleDarkMode()">  
+    <svg viewBox="0 0 24 24"><path d="M12 2a9.93 9.93 0 00-7.07 2.93A10.01 10.01 0 0012 22a10 10 0 000-20zm0 18a7.93 7.93 0 01-5.66-2.34A8 8 0 0112 4a8 8 0 010 16z"/></svg>  
+  </button>  
+  <div class="container">  
+    <div class="card">  
+      <h2>业余无线电点名记录工具</h2>  
+      <div class="form-row">  
+        <input id="controller" placeholder="点名主控呼号" />  
+        <input id="callsign" placeholder="呼号" />
+        <input id="report" placeholder="信号报告" />
+        <input id="qth" placeholder="QTH" />  
+        <input id="device" list="deviceList" placeholder="设备" />  
+        <input id="power" placeholder="功率" />  
+        <input id="antenna" list="antennaList" placeholder="天线" />  
+        <input id="height" placeholder="高度" />  
+      </div>  
+      <div class="form-row">    
+        <button onclick="clearLog()">清空记录</button>  
+        <button onclick="addLog()">添加记录</button>
+        <button id="undoBtn" onclick="undoLastLog()" disabled>撤销操作</button>
+      </div>  
+    </div>  
+  
+    <div class="card">  
+      <h3>设备词典管理</h3>  
+      <div class="form-row">  
+        <input id="newDevice" placeholder="添加设备名称" />  
+        <button onclick="addDevice()">添加到设备词典</button>  
+      </div>  
+      <div class="form-row">  
+        <input type="file" id="deviceFileInput" accept=".txt" />  
+        <button onclick="importDeviceFromFile()">导入设备词库</button>  
+      </div>  
+  
+      <h3>天线词典管理</h3>  
+      <div class="form-row">  
+        <input id="newAntenna" placeholder="添加天线名称" />  
+        <button onclick="addAntenna()">添加到天线词典</button>  
+      </div>  
+      <div class="form-row">  
+        <input type="file" id="antennaFileInput" accept=".txt" />  
+        <button onclick="importAntennaFromFile()">导入天线词库</button>  
+      </div>  
+    </div>  
+    
+    <div class="card">
+      <h3>导出文件</h3>
+      <div class="form-row">
+        <button onclick="exportJSON()">导出 JSON</button>
+        <input type="file" id="importJsonFile" accept=".json" style="display:none" onchange="importJSON(event)" />
+        <button onclick="document.getElementById('importJsonFile').click()">导入 JSON</button>
+        <button onclick="exportExcel()">导出 Excel</button>  
+      </div>
+    </div>
+  
+    <div class="card">  
+      <h3>点名记录</h3>  
+      <div style="overflow-x:auto">  
+        <table id="logTable">  
+          <thead>  
+            <tr><th>#</th><th>时间</th><th>点名主控</th><th>呼号</th><th>信号报告</th><th>QTH</th><th>设备</th><th>功率</th><th>天线</th><th>高度</th></tr>  
+          </thead>  
+          <tbody></tbody>  
+        </table>  
+      </div>  
+    </div>  
+  </div>  
+  
+  <datalist id="deviceList"></datalist>  
+  <datalist id="antennaList"></datalist>  
+  
+  <script>
+    /*********************
+     * 全局变量声明
+     *********************/
+    // 日志数据，从本地存储加载
+    let logData = JSON.parse(localStorage.getItem('logData') || '[]');
+    // 设备词典，从本地存储加载
+    let deviceDict = JSON.parse(localStorage.getItem('deviceDict') || '[]');
+    // 天线词典，从本地存储加载
+    let antennaDict = JSON.parse(localStorage.getItem('antennaDict') || '[]');
+
+    /*********************
+     * 工具函数
+     *********************/
+    
+    /**
+     * 获取当前时间字符串（格式: HH:mm）
+     * @returns {string} 当前时间字符串
+     */
+    function getCurrentTimeStr() {
+      const now = new Date();
+      return now.toTimeString().slice(0, 5);
+    }
+
+    /**
+     * 渲染数据词典到datalist
+     * @param {string} id - datalist元素ID
+     * @param {Array} data - 词典数据数组
+     */
+    function renderDict(id, data) {
+      const list = document.getElementById(id);
+      list.innerHTML = data.map(d => `<option value="${d}">`).join('');
+    }
+
+    /**
+     * 渲染日志表格
+     */
+    function renderTable() {
+      const tbody = document.querySelector("#logTable tbody");
+      tbody.innerHTML = logData.map((r, i) => 
+        `<tr>
+          <td>${i+1}</td>
+          ${r.map(v => `<td>${v}</td>`).join('')}
+        </tr>`
+      ).join('');
+      // 更新撤销按钮状态
+      updateUndoButton();
+    }
+
+    /**
+     * 更新撤销按钮状态
+     */
+    function updateUndoButton() {
+      const btn = document.getElementById("undoBtn");
+      btn.disabled = logData.length === 0;
+    }
+
+    /*********************
+     * 日志操作函数
+     *********************/
+    
+    /**
+     * 添加日志记录
+     */
+    function addLog() {
+      const controllerVal = document.getElementById("controller").value.trim();
+      
+      // 验证主控呼号
+      if (!controllerVal) {
+        alert("请填写点名主控呼号！");
+        return;
+      }
+      
+      // 获取时间值（使用当前时间作为默认值）
+      let timeStr = getCurrentTimeStr();
+
+      // 创建新记录行
+      const row = [
+        timeStr,
+        controllerVal,
+        document.getElementById("callsign").value.trim(),
+        document.getElementById("report").value.trim(),
+        document.getElementById("qth").value.trim(),
+        document.getElementById("device").value.trim(),
+        document.getElementById("power").value.trim(),
+        document.getElementById("antenna").value.trim(),
+        document.getElementById("height").value.trim(),
+      ];
+      
+      // 添加到日志数据
+      logData.push(row);
+      localStorage.setItem("logData", JSON.stringify(logData));
+      renderTable();
+
+      // 清空输入字段（保留主控呼号）
+      document.getElementById("callsign").value = "";
+      document.getElementById("report").value = "";
+      document.getElementById("qth").value = "";
+      document.getElementById("device").value = "";
+      document.getElementById("power").value = "";
+      document.getElementById("antenna").value = "";
+      document.getElementById("height").value = "";
+    }
+
+    /**
+     * 清空日志
+     */
+    function clearLog() {
+      if (confirm("确定清空所有记录？")) {
+        logData = [];
+        localStorage.removeItem("logData");
+        renderTable();
+      }
+    }
+
+    /**
+     * 撤销上一条日志
+     */
+    function undoLastLog() {
+      if (logData.length === 0) {
+        alert("没有记录可以撤销了！");
+        return;
+      }
+      logData.pop();
+      localStorage.setItem("logData", JSON.stringify(logData));
+      renderTable();
+    }
+
+    /*********************
+     * 词典管理函数
+     *********************/
+    
+    /**
+     * 添加新设备到词典
+     */
+    function addDevice() {
+      const input = document.getElementById("newDevice");
+      const val = input.value.trim();
+      
+      if (val && !deviceDict.includes(val)) {
+        deviceDict.push(val);
+        deviceDict.sort();
+        localStorage.setItem("deviceDict", JSON.stringify(deviceDict));
+        renderDict("deviceList", deviceDict);
+      }
+      input.value = "";
+    }
+
+    /**
+     * 从文件导入设备词典
+     */
+    function importDeviceFromFile() {
+      const fileInput = document.getElementById("deviceFileInput");
+      const file = fileInput.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = e => {
+        let lines = e.target.result.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+        const currentSet = new Set(deviceDict);
+        lines.forEach(l => currentSet.add(l));
+        deviceDict = Array.from(currentSet).sort();
+        localStorage.setItem("deviceDict", JSON.stringify(deviceDict));
+        renderDict("deviceList", deviceDict);
+        fileInput.value = "";
+      };
+      reader.readAsText(file);
+    }
+
+    /**
+     * 添加新天线到词典
+     */
+    function addAntenna() {
+      const input = document.getElementById("newAntenna");
+      const val = input.value.trim();
+      
+      if (val && !antennaDict.includes(val)) {
+        antennaDict.push(val);
+        antennaDict.sort();
+        localStorage.setItem("antennaDict", JSON.stringify(antennaDict));
+        renderDict("antennaList", antennaDict);
+      }
+      input.value = "";
+    }
+
+    /**
+     * 从文件导入天线词典
+     */
+    function importAntennaFromFile() {
+      const fileInput = document.getElementById("antennaFileInput");
+      const file = fileInput.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = e => {
+        let lines = e.target.result.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+        const currentSet = new Set(antennaDict);
+        lines.forEach(l => currentSet.add(l));
+        antennaDict = Array.from(currentSet).sort();
+        localStorage.setItem("antennaDict", JSON.stringify(antennaDict));
+        renderDict("antennaList", antennaDict);
+        fileInput.value = "";
+      };
+      reader.readAsText(file);
+    }
+
+    /*********************
+     * 导入导出函数
+     *********************/
+    
+    /**
+     * 导出Excel文件
+     */
+    function exportExcel() {
+      const grouped = {};
+      for (const row of logData) {
+        const controller = row[1];
+        if (!grouped[controller]) grouped[controller] = [];
+        grouped[controller].push(row);
+      }
+
+      // 定义带备注的10列表头
+      const header = ["#", "时间", "呼号", "信号报告", "QTH", "设备", "功率", "天线", "高度", "备注"];
+      const ws_data = [header];
+
+      // 全局序号计数器（从1开始）
+      let globalIndex = 1;
+  
+      for (const controller in grouped) {
+        // 获取该组第一条记录的时间
+        const firstTime = grouped[controller][0][0];
+    
+        // 智能计算主控时间：减1分钟并智能取整
+        const controllerTime = calculateControllerTime(firstTime);
+    
+        // 主控信息行
+        ws_data.push(["点名主控:", controllerTime, controller, ...Array(7).fill("")]);
+    
+        grouped[controller].forEach(r => {
+          const [time, , callsign, report, qth, device, power, antenna, height] = r;
+          // 使用全局连续序号
+          ws_data.push([
+            globalIndex++, // 使用全局连续序号
+            time, 
+            callsign, 
+            report, 
+            qth, 
+            device, 
+            power, 
+            antenna, 
+            height, 
+            ""  // 空备注列
+          ]);
+        });
+      }
+
+      const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+      // 统一样式配置
+      const border = {
+        top: { style: "thin", color: { rgb: "CCCCCC" } },
+        bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+        left: { style: "thin", color: { rgb: "CCCCCC" } },
+        right: { style: "thin", color: { rgb: "CCCCCC" } }
+      };
+
+      const headerStyle = {
+        font: { bold: true },
+        fill: { fgColor: { rgb: "F2F2F2" } },
+        alignment: { horizontal: "center", vertical: "center" },
+        border
+      };
+
+      const controllerStyle = {
+        font: { bold: true },
+        fill: { fgColor: { rgb: "FFFFCC" } },
+        alignment: { horizontal: "center", vertical: "center" },
+        border
+      };
+
+      const cellStyle = {
+        alignment: { horizontal: "center", vertical: "center" },
+        border
+      };
+
+      // 应用样式到所有单元格
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const cell_ref = XLSX.utils.encode_cell({r: R, c: C});
+          if (!ws[cell_ref]) ws[cell_ref] = {t: 's', v: ''};
+      
+          if (R === 0) {
+            ws[cell_ref].s = headerStyle;  // 表头样式
+          } else if (ws_data[R][0] === "点名主控:") {
+            // 主控行整行应用黄色背景
+            ws[cell_ref].s = controllerStyle;
+          } else {
+            ws[cell_ref].s = cellStyle;    // 数据行样式
+          }
+        }
+      }
+
+      // 设置列宽（自适应+手动调整）
+      const colWidths = Array(10).fill(10); // 默认10字符宽
+      colWidths[0] = 8;   // #列
+      colWidths[1] = 10;  // 时间列
+      colWidths[2] = 15;  // 呼号列
+      colWidths[4] = 18;  // QTH列
+      colWidths[5] = 15;  // 设备列
+      colWidths[7] = 18;  // 天线列
+      ws['!cols'] = colWidths.map(w => ({ width: w }));
+
+      // 创建文件
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "点名记录");
+  
+      const now = new Date();
+      const filename = `点名记录_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;
+  
+      XLSX.writeFile(wb, filename);
+    }
+
+    /**
+     * 智能计算主控时间
+     * 1. 减去1分钟
+     * 2. 如果结果与5/10的整数时间相差1分钟，则取整
+     * @param {string} timeStr - 原始时间字符串 (格式: "HH:mm" 或 "HH:mm:ss")
+     * @returns {string} 优化后的时间字符串
+     */
+     
+    function calculateControllerTime(timeStr) {
+      // 处理空值情况
+      if (!timeStr) return "";
+  
+      // 减去1分钟得到基础时间
+      const baseTime = subtractOneMinute(timeStr);
+  
+      // 提取小时和分钟
+      const timeParts = baseTime.split(':');
+      const hours = parseInt(timeParts[0], 10);
+      let minutes = parseInt(timeParts[1], 10);
+  
+      // 如果分钟数已经是5或10的倍数，直接返回
+      if (minutes % 5 === 0) return baseTime;
+  
+      // 计算最接近的5/10倍数时间
+      const nearestFive = Math.round(minutes / 5) * 5;
+      const nearestTen = Math.round(minutes / 10) * 10;
+     
+      // 计算与5/10倍数的差距
+      const diffToFive = Math.abs(minutes - nearestFive);
+      const diffToTen = Math.abs(minutes - nearestTen);
+  
+      // 优先处理10的倍数（更整洁）
+      if (diffToTen === 1) {
+        return formatTime(hours, nearestTen, timeParts[2]);
+      }
+  
+      // 其次处理5的倍数
+      if (diffToFive === 1) {
+        return formatTime(hours, nearestFive, timeParts[2]);
+      }
+  
+      // 否则返回减去1分钟后的时间
+      return baseTime;
+    }
+
+    /**
+     * 时间减1分钟辅助函数
+     * @param {string} timeStr - 原始时间字符串
+     * @returns {string} 减去1分钟后的时间字符串
+     */
+     
+    function subtractOneMinute(timeStr) {
+      // 提取小时和分钟部分
+      const timeParts = timeStr.split(':');
+      let hours = parseInt(timeParts[0], 10);
+      let minutes = parseInt(timeParts[1], 10);
+  
+      // 减去1分钟
+      minutes -= 1;
+  
+      // 处理分钟负数（跨小时）
+      if (minutes < 0) {
+        minutes = 59;
+        hours -= 1;
+    
+        // 处理小时负数（跨天）
+        if (hours < 0) {
+          hours = 23;
+        }
+      }
+  
+      // 返回时间字符串（保留原始秒数部分如果存在）
+      return formatTime(hours, minutes, timeParts[2]);
+    }
+
+    /**
+     * 格式化时间为字符串
+     * @param {number} hours - 小时
+     * @param {number} minutes - 分钟
+     * @param {string} [seconds] - 可选秒数
+     * @returns {string} 格式化的时间字符串
+     */
+     
+    function formatTime(hours, minutes, seconds) {
+      // 格式化为两位数
+      const formattedHours = hours.toString().padStart(2, '0');
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+  
+      // 返回时间字符串
+      return seconds !== undefined 
+        ? `${formattedHours}:${formattedMinutes}:${seconds}`
+        : `${formattedHours}:${formattedMinutes}`;
+    }
+    
+    /**
+     * 导出JSON文件
+     */
+    function exportJSON() {
+      const dataStr = JSON.stringify(logData, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Radio_Log_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    /**
+     * 导入JSON文件
+     * @param {Event} event - 文件输入事件
+     */
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          if (!Array.isArray(importedData)) throw new Error("JSON格式错误，应该是数组");
+          
+          logData = importedData;
+          localStorage.setItem("logData", JSON.stringify(logData));
+          renderTable();
+          alert("导入成功！");
+        } catch (err) {
+          alert("导入失败：" + err.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = ""; // 清空文件输入
+    }
+
+    /*********************
+     * 主题切换函数
+     *********************/
+    
+    /**
+     * 切换暗色/亮色模式
+     */
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+
+    /*********************
+     * 初始化函数
+     *********************/
+    
+    /**
+     * 从GitHub加载词典数据
+     */
+    async function loadDictionaries() {
+      const deviceDictURL = "https://cdn.jsdelivr.net/gh/Mazha0309/BG5CRL-Log-tool/device.txt";
+      const antennaDictURL = "https://cdn.jsdelivr.net/gh/Mazha0309/BG5CRL-Log-tool/antenna.txt";
+
+      try {
+        // 加载设备词典
+        const deviceRes = await fetch(deviceDictURL);
+        const deviceText = await deviceRes.text();
+        const deviceLines = deviceText.split(/\r?\n/).filter(l => l.trim());
+        updateDeviceDict(deviceLines);
+        
+        // 加载天线词典
+        const antennaRes = await fetch(antennaDictURL);
+        const antennaText = await antennaRes.text();
+        const antennaLines = antennaText.split(/\r?\n/).filter(l => l.trim());
+        updateAntennaDict(antennaLines);
+      } catch (err) {
+        console.error("词典加载失败:", err);
+      }
+    }
+
+    /**
+     * 更新设备词典
+     * @param {Array} lines - 设备名称数组
+     */
+    function updateDeviceDict(lines) {
+      const deviceSet = new Set(deviceDict);
+      lines.forEach(line => {
+        const item = line.trim();
+        if (item) deviceSet.add(item);
+      });
+      deviceDict = Array.from(deviceSet).sort();
+      renderDict("deviceList", deviceDict);
+    }
+
+    /**
+     * 更新天线词典
+     * @param {Array} lines - 天线名称数组
+     */
+    function updateAntennaDict(lines) {
+      const antennaSet = new Set(antennaDict);
+      lines.forEach(line => {
+        const item = line.trim();
+        if (item) antennaSet.add(item);
+      });
+      antennaDict = Array.from(antennaSet).sort();
+      renderDict("antennaList", antennaDict);
+    }
+
+    /*********************
+     * 页面初始化
+     *********************/
+    window.addEventListener("DOMContentLoaded", () => {
+      // 渲染词典和表格
+      renderDict("deviceList", deviceDict);
+      renderDict("antennaList", antennaDict);
+      renderTable();
+      
+      // 加载远程词典
+      loadDictionaries();
+      
+      // 页面卸载时清理部分本地存储
+      window.addEventListener('beforeunload', () => {
+        localStorage.removeItem('deviceDict');
+        localStorage.removeItem('antennaDict');
+      });
+    });
+  </script>
+  <div id="time-converter" style="max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f9ff; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+    <h3 style="text-align: center; margin-bottom: 30px; color: #2c3e50; font-size: 24px; position: relative; padding-bottom: 10px;">
+        全球时间转换器
+        <span style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60px; height: 3px; background: linear-gradient(to right, #1E90FF, #4169E1); border-radius: 3px;"></span>
+    </h3>
+    
+    <div style="display: flex; justify-content: space-around; gap: 20px; flex-wrap: wrap;">
+        <!-- UTC时间卡片 -->
+        <div style="flex: 1; min-width: 300px; background: linear-gradient(135deg, #1E90FF, #1a5fb4); padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <div style="background: white; color: #1E90FF; padding: 10px; text-align: center; font-weight: bold; border-radius: 6px; font-size: 18px; margin-bottom: 15px;">
+                UTC时间 (零时区)
+            </div>
+            <div id="utc-date" style="color: rgba(255,255,255,0.9); margin: 15px 0 5px; text-align: center; font-size: 16px;"></div>
+            <div id="utc-time" style="font-family: 'Courier New', monospace; font-size: 24px; text-align: center; color: white; padding: 10px 0;"></div>
+        </div>
+        
+        <!-- 北京时间卡片 -->
+        <div style="flex: 1; min-width: 300px; background: linear-gradient(135deg, #4169E1, #2a4b9c); padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <div style="background: white; color: #4169E1; padding: 10px; text-align: center; font-weight: bold; border-radius: 6px; font-size: 18px; margin-bottom: 15px;">
+                北京时间 (UTC+8)
+            </div>
+            <div id="beijing-date" style="color: rgba(255,255,255,0.9); margin: 15px 0 5px; text-align: center; font-size: 16px;"></div>
+            <div id="beijing-time" style="font-family: 'Courier New', monospace; font-size: 24px; text-align: center; color: white; padding: 10px 0;"></div>
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 25px; color: #7f8c8d; font-size: 14px;">
+        UTC时间与北京时间转换器
+    </div>
+</div>
+
+<script>
+    // 获取正确的UTC时间（零时区）
+    function getUTCTime() {
+        const now = new Date();
+        return new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+    }
+    
+    // 获取北京时间（UTC+8）
+    function getBeijingTime() {
+        const utc = getUTCTime();
+        return new Date(utc.getTime() + 8 * 60 * 60 * 1000);
+    }
+
+    // 格式化日期显示
+    function formatDate(date) {
+        const weeks = ['日', '一', '二', '三', '四', '五', '六'];
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const weekDay = date.getDay();
+        
+        return `${year}年${month}月${day}日 星期${weeks[weekDay]}`;
+    }
+
+    // 格式化时间格子（带分隔效果）
+    function formatTimeWithBoxes(date) {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        
+        return `
+            <span style="display: inline-block; border: 1px solid rgba(255,255,255,0.4); padding: 5px 10px; margin: 0 3px; background: rgba(255,255,255,0.2); border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">${hours}</span>
+            <span style="color: white; font-weight: bold;">:</span>
+            <span style="display: inline-block; border: 1px solid rgba(255,255,255,0.4); padding: 5px 10px; margin: 0 3px; background: rgba(255,255,255,0.2); border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">${minutes}</span>
+            <span style="color: white; font-weight: bold;">:</span>
+            <span style="display: inline-block; border: 1px solid rgba(255,255,255,0.4); padding: 5px 10px; margin: 0 3px; background: rgba(255,255,255,0.2); border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">${seconds}</span>
+        `;
+    }
+
+    // 更新时间显示
+    function updateTimes() {
+        // UTC时间（零时区）
+        const utcDate = getUTCTime();
+        document.getElementById('utc-date').textContent = formatDate(utcDate);
+        document.getElementById('utc-time').innerHTML = formatTimeWithBoxes(utcDate);
+        
+        // 北京时间（UTC+8）
+        const beijingDate = getBeijingTime();
+        document.getElementById('beijing-date').textContent = formatDate(beijingDate);
+        document.getElementById('beijing-time').innerHTML = formatTimeWithBoxes(beijingDate);
+    }
+
+    // 初始更新
+    updateTimes();
+    
+    // 每秒更新一次
+    setInterval(updateTimes, 1000);
+</script>
+
+  <footer style="text-align:center; margin-top:2em; font-size:0.8em; color: #555;">  
+    作者 Mazha0309 / BG5CRL  
+  </footer>  
+  <footer style="width: 100%; margin-top: 2rem; text-align: center;">  
+    <a  
+      href="https://github.com/Mazha0309/BG5CRL-Log-tool"  
+      target="_blank"  
+      title="GitHub 仓库"  
+      style="display: inline-block; width: 20px; height: 20px; opacity: 0.6; transition: opacity 0.2s;"  
+      onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"  
+    >  
+      <svg  
+        xmlns="http://www.w3.org/2000/svg"  
+        fill="currentColor"  
+        viewBox="0 0 24 24"  
+        style="width: 100%; height: 100%; color: gray;"  
+      >  
+        <path  
+          d="M12 0.297C5.373 0.297 0 5.67 0 12.297c0 5.303 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577   
+           0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729   
+           1.205.084 1.84 1.236 1.84 1.236 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.604-2.665-.3-5.466-1.335-5.466-5.93   
+           0-1.31.468-2.38 1.236-3.22-.123-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23a11.52 11.52 0 0 1 3-.404   
+           11.5 11.5 0 0 1 3 .404c2.29-1.552 3.297-1.23 3.297-1.23.653 1.653.241 2.873.118 3.176.77.84   
+           1.235 1.91 1.235 3.22 0 4.61-2.803 5.625-5.475 5.92.43.37.823 1.102.823 2.222   
+           0 1.604-.015 2.896-.015 3.286 0 .32.218.694.825.576C20.565 22.092 24 17.592 24 12.297   
+           24 5.67 18.627.297 12 .297z"  
+        />  
+      </svg>  
+    </a>
+  
+  </footer>  
+</body>  
+</html>
