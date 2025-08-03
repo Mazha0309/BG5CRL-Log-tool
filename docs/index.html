@@ -164,6 +164,7 @@
       <h2>业余无线电点名记录工具</h2>  
       <div class="form-row">  
         <input id="controller" placeholder="点名主控呼号" />  
+        <input id="time" placeholder="时间（可选，默认当前）" />
         <input id="callsign" placeholder="呼号" />
         <input id="report" placeholder="信号报告" />
         <input id="qth" placeholder="QTH" />  
@@ -174,7 +175,7 @@
       </div>  
       <div class="form-row">    
         <button onclick="clearLog()">清空记录</button>  
-        <button onclick="addLog()">添加记录</button>
+        <button onclick="addLog()" id="addLogBtn">添加记录</button>
         <button id="undoBtn" onclick="undoLastLog()" disabled>撤销操作</button>
       </div>  
     </div>  
@@ -268,6 +269,7 @@
     let deviceDict = JSON.parse(localStorage.getItem('deviceDict') || '[]');
     // 天线词典，从本地存储加载
     let antennaDict = JSON.parse(localStorage.getItem('antennaDict') || '[]');
+    let editIndex = -1; // -1 表示不是编辑状态
 
     /*********************
      * 工具函数
@@ -296,51 +298,68 @@
      * 渲染日志表格
      */
      
-    function renderTable() {
-      const tbody = document.querySelector("#logTable tbody");
-      tbody.innerHTML = "";
+  function renderTable() {
+    const tbody = document.querySelector("#logTable tbody");
+    tbody.innerHTML = "";
 
-      logData.forEach((row, index) => {
-        const tr = document.createElement("tr");
+    logData.forEach((row, index) => {
+      const tr = document.createElement("tr");
 
-        // 序号
-        const indexTd = document.createElement("td");
-        indexTd.textContent = index + 1;
-        tr.appendChild(indexTd);
+      // 序号
+      const indexTd = document.createElement("td");
+      indexTd.textContent = index + 1;
+      tr.appendChild(indexTd);
 
-        // 数据单元格
-        row.forEach(cell => {
-          const td = document.createElement("td");
-          td.textContent = cell;
-          tr.appendChild(td);
-        });
+      // 数据单元格
+      row.forEach(cell => {
+        const td = document.createElement("td");
+        td.textContent = cell;
+        tr.appendChild(td);
+      });
 
-        // 操作按钮
-        const actionTd = document.createElement("td");
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "删除";
-        deleteBtn.onclick = () => {
-          if (confirm("确定要删除这条记录吗？")) {
-            logData.splice(index, 1);
-            localStorage.setItem("logData", JSON.stringify(logData));
-            renderTable();
-          }
-        };
+      // 操作按钮单元格
+      const actionTd = document.createElement("td");
+  
+      // 编辑按钮
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "编辑";
+      editBtn.onclick = () => {
+        const [time, controller, callsign, report, qth, device, power, antenna, height] = logData[index];
+
+        document.getElementById("controller").value = controller;
+        document.getElementById("callsign").value = callsign;
+        document.getElementById("report").value = report;
+        document.getElementById("qth").value = qth;
+        document.getElementById("device").value = device;
+        document.getElementById("power").value = power;
+        document.getElementById("antenna").value = antenna;
+        document.getElementById("height").value = height;
+
+        const timeInput = document.getElementById("time");
+        if (timeInput) timeInput.value = time;
+
+        editIndex = index;
+        document.getElementById("addLogBtn").textContent = "更新记录";
+      };
+      actionTd.appendChild(editBtn);
+
+      // 删除按钮
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "删除";
+      deleteBtn.onclick = () => {
+        if (confirm("确定要删除这条记录吗？")) {
+          logData.splice(index, 1);
+          localStorage.setItem("logData", JSON.stringify(logData));
+          renderTable();
+         }
+      };
         actionTd.appendChild(deleteBtn);
+        
         tr.appendChild(actionTd);
-
         tbody.appendChild(tr);
       });
 
       updateUndoButton();
-    }
-
-    /**
-     * 更新撤销按钮状态
-     */
-    function updateUndoButton() {
-      const btn = document.getElementById("undoBtn");
-      btn.disabled = logData.length === 0;
     }
 
     /*********************
@@ -352,17 +371,15 @@
      */
     function addLog() {
       const controllerVal = document.getElementById("controller").value.trim();
-      
-      // 验证主控呼号
       if (!controllerVal) {
         alert("请填写点名主控呼号！");
         return;
       }
-      
-      // 获取时间值（使用当前时间作为默认值）
-      let timeStr = getCurrentTimeStr();
 
-      // 创建新记录行
+      let timeInput = document.getElementById("time");
+      let timeStr = timeInput ? timeInput.value : getCurrentTimeStr();
+      if (!timeStr) timeStr = getCurrentTimeStr();
+
       const row = [
         timeStr,
         controllerVal,
@@ -374,22 +391,42 @@
         document.getElementById("antenna").value.trim(),
         document.getElementById("height").value.trim(),
       ];
+
+      if (editIndex >= 0) {
+        logData[editIndex] = row;
+        editIndex = -1;
+        document.getElementById("addLogBtn").textContent = "添加记录";
+      } else {
+        logData.push(row);
+      }
       
-      // 添加到日志数据
-      logData.push(row);
+function resetForm() {
+  const ids = [
+    "callsign", "report",
+    "qth", "device", "power",
+    "antenna", "height", "time"
+  ];
+
+  for (const id of ids) {
+    const el = document.getElementById(id);
+    if (el) {
+      if (id === "time") {
+        el.value = getCurrentTimeStr(); // 重置为当前时间
+      } else {
+        el.value = "";
+      }
+    } else {
+      console.warn(`⚠️ 未找到 ID 为 ${id} 的输入框`);
+    }
+  }
+
+  console.log("✅ 表单已重置");
+} 
       localStorage.setItem("logData", JSON.stringify(logData));
       renderTable();
-
-      // 清空输入字段（保留主控呼号）
-      document.getElementById("callsign").value = "";
-      document.getElementById("report").value = "";
-      document.getElementById("qth").value = "";
-      document.getElementById("device").value = "";
-      document.getElementById("power").value = "";
-      document.getElementById("antenna").value = "";
-      document.getElementById("height").value = "";
+      resetForm();
     }
-
+    
     /**
      * 清空日志
      */
@@ -831,6 +868,14 @@
         localStorage.removeItem('antennaDict');
       });
     });
+    
+    function updateUndoButton() {
+  const btn = document.getElementById("undoBtn");
+  if (btn) {
+    btn.disabled = logData.length === 0;
+  }
+}
+
   </script>
 </body>  
 </html>
