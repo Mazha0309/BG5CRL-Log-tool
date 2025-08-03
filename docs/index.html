@@ -216,7 +216,7 @@
       <div style="overflow-x:auto">  
         <table id="logTable">  
           <thead>  
-            <tr><th>#</th><th>时间</th><th>点名主控</th><th>呼号</th><th>信号报告</th><th>QTH</th><th>设备</th><th>功率</th><th>天线</th><th>高度</th></tr>  
+            <tr><th>#</th><th>时间</th><th>点名主控</th><th>呼号</th><th>信号报告</th><th>QTH</th><th>设备</th><th>功率</th><th>天线</th><th>高度</th><th>操作</th></tr>  
           </thead>  
           <tbody></tbody>  
         </table>  
@@ -295,15 +295,43 @@
     /**
      * 渲染日志表格
      */
+     
     function renderTable() {
       const tbody = document.querySelector("#logTable tbody");
-      tbody.innerHTML = logData.map((r, i) => 
-        `<tr>
-          <td>${i+1}</td>
-          ${r.map(v => `<td>${v}</td>`).join('')}
-        </tr>`
-      ).join('');
-      // 更新撤销按钮状态
+      tbody.innerHTML = "";
+
+      logData.forEach((row, index) => {
+        const tr = document.createElement("tr");
+
+        // 序号
+        const indexTd = document.createElement("td");
+        indexTd.textContent = index + 1;
+        tr.appendChild(indexTd);
+
+        // 数据单元格
+        row.forEach(cell => {
+          const td = document.createElement("td");
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+
+        // 操作按钮
+        const actionTd = document.createElement("td");
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "删除";
+        deleteBtn.onclick = () => {
+          if (confirm("确定要删除这条记录吗？")) {
+            logData.splice(index, 1);
+            localStorage.setItem("logData", JSON.stringify(logData));
+            renderTable();
+          }
+        };
+        actionTd.appendChild(deleteBtn);
+        tr.appendChild(actionTd);
+
+        tbody.appendChild(tr);
+      });
+
       updateUndoButton();
     }
 
