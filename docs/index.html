@@ -192,7 +192,7 @@
       color: #f0f0f0;
       border: 1px solid #555;
     }
-    
+
     /* 修复表格标题区域布局 */
     .table-header {
       display: flex;
@@ -202,7 +202,7 @@
       margin-bottom: 10px;
       gap: 10px;
     }
-    
+
     .log-count {
       font-size: 0.9em;
       color: #666;
@@ -212,12 +212,12 @@
       font-weight: 500;
       order: 1; /* 确保在小屏幕上正确换行 */
     }
-    
+
     .dark .log-count {
       background: rgba(255, 255, 255, 0.1);
       color: #ccc;
     }
-    
+
     /* 修复清空按钮位置 */
     #clearLog {
       background-color: var(--danger);
@@ -232,40 +232,40 @@
       transition: all 0.3s ease;
       margin-left: auto; /* 确保在右侧 */
     }
-    
+
     #clearLog:hover {
       background-color: #b71c1c;
       box-shadow: 0 4px 8px rgba(211, 47, 47, 0.3);
     }
-    
+
     #clearLog:focus {
       outline: none;
       box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.3);
     }
-    
+
     #clearLog i {
       font-size: 1.1em;
     }
-    
+
     /* 响应式调整 */
     @media (max-width: 768px) {
       .table-header {
         flex-direction: column;
         align-items: flex-start;
       }
-      
+
       .log-count {
         order: 0;
         margin-bottom: 10px;
       }
-      
+
       #clearLog {
         width: 100%;
         margin-left: 0;
         justify-content: center;
       }
     }
-    
+
     .confirmation-modal {
       position: fixed;
       top: 0;
@@ -281,12 +281,12 @@
       pointer-events: none;
       transition: opacity 0.3s ease;
     }
-    
+
     .confirmation-modal.active {
       opacity: 1;
       pointer-events: all;
     }
-    
+
     .modal-content {
       background: var(--card-bg);
       padding: 2em;
@@ -296,34 +296,34 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
       text-align: center;
     }
-    
+
     .modal-content h3 {
       margin-top: 0;
       color: var(--danger);
     }
-    
+
     .modal-buttons {
       display: flex;
       justify-content: center;
       gap: 1em;
       margin-top: 1.5em;
     }
-    
+
     .modal-buttons button {
       min-width: 100px;
       padding: 0.75em 1.5em;
       border-radius: 8px;
       font-weight: 500;
     }
-    
+
     .modal-buttons .confirm-btn {
       background-color: var(--danger);
     }
-    
+
     .modal-buttons .cancel-btn {
       background-color: #757575;
     }
-    
+
     /* 词库折叠组件样式 */
     .dictionary-manager {
       border: 1px solid rgba(33, 150, 243, 0.2);
@@ -333,12 +333,12 @@
       background: rgba(33, 150, 243, 0.05);
       transition: all 0.3s ease;
     }
-    
+
     .dictionary-manager.active {
       background: rgba(33, 150, 243, 0.08);
       border-color: var(--accent);
     }
-    
+
     .dict-header {
       padding: 12px 15px;
       background: rgba(33, 150, 243, 0.1);
@@ -348,11 +348,11 @@
       align-items: center;
       transition: background 0.3s ease;
     }
-    
+
     .dict-header:hover {
       background: rgba(33, 150, 243, 0.15);
     }
-    
+
     .dict-header h3 {
       margin: 0;
       color: var(--accent);
@@ -360,42 +360,42 @@
       font-weight: 500;
       transition: color 0.3s ease;
     }
-    
+
     .dict-header i {
       transition: transform 0.3s ease;
       color: var(--accent);
       font-size: 1.1em;
     }
-    
+
     .dictionary-manager.active .dict-header i {
       transform: rotate(180deg);
     }
-    
+
     .dict-content {
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.3s ease, padding 0.3s ease;
       padding: 0 15px;
     }
-    
+
     .dictionary-manager.active .dict-content {
       max-height: 500px;
       padding: 15px;
     }
-    
+
     /* 折叠状态指示器 */
     .toggle-indicator {
       color: var(--accent);
       font-size: 1.2em;
     }
-    
+
     /* 添加折叠/展开全部按钮 */
     .toggle-all-container {
       display: flex;
       justify-content: center;
       margin-bottom: 1rem;
     }
-    
+
     .toggle-all-btn {
       background-color: var(--accent);
       color: white;
@@ -409,32 +409,32 @@
       font-size: 0.9em;
       transition: background 0.3s ease, transform 0.2s ease;
     }
-    
+
     .toggle-all-btn:hover {
       background-color: #1976d2;
       transform: translateY(-2px);
     }
-    
+
     .toggle-all-btn:active {
       transform: translateY(0);
     }
-    
+
     /* 深色模式下的按钮样式 */
     .dark .toggle-all-btn {
       background-color: #0d47a1;
     }
-    
+
     .dark .toggle-all-btn:hover {
       background-color: #093070;
     }
-    
+
     /* 导出按钮布局 */
     .export-buttons {
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
-    
+
     .export-buttons button {
       width: 100%;
       padding: 12px;
@@ -442,49 +442,45 @@
       font-size: 1em;
       text-align: center;
     }
-    
+
     /* 响应式调整 */
     @media (max-width: 768px) {
       .form-row {
         flex-direction: column;
       }
-      
-      .form-row input, 
-      .form-row select {
-        width: 100%;
-      }
-      
+
+
       .card {
         padding: 1em;
       }
-      
+
       .dictionary-manager {
         margin-bottom: 0.8rem;
       }
-      
+
       .dict-header {
         padding: 10px 12px;
       }
-      
+
       .dict-content {
         padding: 0 10px;
       }
-      
+
       .dictionary-manager.active .dict-content {
         padding: 10px;
       }
-      
+
       .export-buttons button {
         width: 100%;
       }
     }
-    
+
     @media (min-width: 768px) {
       .export-buttons {
         flex-direction: row;
         flex-wrap: wrap;
       }
-      
+
       .export-buttons button {
         flex: 1;
         min-width: 150px;
@@ -496,7 +492,7 @@
   <button id="darkToggle" onclick="toggleDarkMode()">
     <svg viewBox="0 0 24 24"><path d="M12 2a9.93 9.93 0 00-7.07 2.93A10.01 10.01 0 0012 22a10 10 0 000-20zm0 18a7.93 7.93 0 01-5.66-2.34A8 8 0 0112 4a8 8 0 010 16z"/></svg>
   </button>
-  
+
   <div class="confirmation-modal" id="confirmationModal">
     <div class="modal-content">
       <h3>确认清空记录</h3>
@@ -511,7 +507,7 @@
       </div>
     </div>
   </div>
-  
+
   <div class="container">
     <div class="card">
       <h2>业余无线电点名记录工具</h2>
@@ -544,7 +540,7 @@
           <i class="fas fa-trash-alt"></i> 清空所有记录
         </button>
       </div>
-      
+
       <div class="table-wrapper">
         <table id="logTable">
           <thead>
@@ -569,14 +565,14 @@
 
     <div class="card">
       <h3>词库管理器</h3>
-      
+
       <!-- 添加折叠/展开全部按钮 -->
       <div class="toggle-all-container">
         <button id="toggleAllBtn" class="toggle-all-btn" onclick="toggleAllDictionaries()">
           <i class="fas fa-chevron-circle-down"></i> 展开全部词库
         </button>
       </div>
-      
+
       <!-- 词库折叠组件 -->
       <div class="dictionary-manager">
         <div class="dict-header" onclick="toggleDictionary(this)">
@@ -598,7 +594,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="dictionary-manager">
         <div class="dict-header" onclick="toggleDictionary(this)">
           <h3>天线词典管理</h3>
@@ -619,7 +615,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="dictionary-manager">
         <div class="dict-header" onclick="toggleDictionary(this)">
           <h3>呼号词典管理</h3>
@@ -640,7 +636,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="dictionary-manager">
         <div class="dict-header" onclick="toggleDictionary(this)">
           <h3>QTH词典管理</h3>
@@ -687,19 +683,19 @@
     <!-- GitHub 图标 -->
     <a href="https://github.com/Mazha0309/BG5CRL-Log-tool" target="_blank" title="GitHub 仓库"
        style="display: inline-block; width: 24px; height: 24px; margin: 0 10px; opacity: 0.6;">
-      
+
     </a>
 
     <!-- Gitee 图标 -->
     <a href="https://gitee.com/Mazha0309/BG5CRL-Log-tool" target="_blank" title="Gitee 仓库"
        style="display: inline-block; width: 24px; height: 24px; margin: 0 10px; opacity: 0.6;">
-      
+
     </a>
 
     <!-- GitCode 图标-->
     <a href="https://gitcode.com/Mazha0309/BG5CRL-Log-tool" target="_blank" title="GitCode 仓库"
        style="display: inline-block; width: 24px; height: 24px; margin: 0 10px; opacity: 0.6;">
-      
+
     </a>
   </footer>
 
@@ -821,7 +817,7 @@
       updateUndoButton();
       updateLogCount();
     }
-    
+
     /**
      * 更新日志计数
      */
@@ -829,7 +825,7 @@
       const count = logData.length;
       const logCountEl = document.getElementById('logCount');
       logCountEl.textContent = `${count} 条记录`;
-      
+
       // 根据数量改变样式
       if(count > 0) {
         logCountEl.style.color = '#388e3c';
@@ -843,41 +839,41 @@
     /*********************
      * 词库折叠功能
      *********************/
-    
+
     /**
      * 切换单个词库折叠状态
      */
     function toggleDictionary(header) {
       const manager = header.parentElement;
       manager.classList.toggle('active');
-      
+
       // 更新按钮文本
       updateToggleButtonText();
     }
-    
+
     /**
      * 切换所有词库的折叠状态
      */
     function toggleAllDictionaries() {
       dictionariesCollapsed = !dictionariesCollapsed;
-      
+
       const managers = document.querySelectorAll('.dictionary-manager');
       managers.forEach(manager => {
         dictionariesCollapsed ? 
           manager.classList.remove('active') : 
           manager.classList.add('active');
       });
-      
+
       updateToggleButtonText();
     }
-    
+
     /**
      * 更新折叠/展开按钮文本
      */
     function updateToggleButtonText() {
       const toggleBtn = document.getElementById('toggleAllBtn');
       const allActive = document.querySelectorAll('.dictionary-manager.active').length === 4;
-      
+
       if (allActive) {
         dictionariesCollapsed = false;
         toggleBtn.innerHTML = '<i class="fas fa-chevron-circle-up"></i> 折叠全部词库';
@@ -978,7 +974,7 @@
           }
         }
       });
-      
+
       // 关闭确认对话框
       document.getElementById('confirmationModal').classList.remove('active');
     }
@@ -996,7 +992,7 @@
       renderTable();
       updateLogCount();
     }
-    
+
     /**
      * 显示清空确认对话框
      */
@@ -1007,14 +1003,14 @@
       }
       document.getElementById('confirmationModal').classList.add('active');
     }
-    
+
     /**
      * 确认清空日志
      */
     function confirmClearLog() {
       clearLog();
     }
-    
+
     /**
      * 取消清空日志
      */
@@ -1503,7 +1499,7 @@
       if (localStorage.getItem('darkMode') === 'true') {
         document.body.classList.add('dark');
       }
-      
+
       // 渲染词典和表格
       renderDict("deviceList", deviceDict);
       renderDict("antennaList", antennaDict);
