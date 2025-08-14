@@ -6,6 +6,8 @@
   <title>业余无线电点名记录工具</title>
   <!-- 引入SheetJS库用于Excel操作 -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.min.js"></script>
+  <!-- 引入FontAwesome图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
@@ -24,7 +26,7 @@
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
   <meta name="theme-color" content="#ffffff">
-  
+
   <!-- 页面样式 -->
   <style>
     :root {
@@ -35,6 +37,7 @@
       --btn-fg: #fff;
       --input-bg: #ffffff;
       --accent: #2196f3;
+      --danger: #d32f2f;
     }
     body.dark {
       --bg: #121212;
@@ -44,13 +47,14 @@
       --btn-fg: #fff;
       --input-bg: #333;
       --accent: #90caf9;
+      --danger: #b71c1c;
     }
     body {
       margin: 0;
       padding: 2em 1em;
       background-color: var(--bg);
       color: var(--fg);
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       transition: background-color 0.5s ease, color 0.5s ease;
     }
     body, .card, table, th, td, h2, h3, input, select, button {
@@ -66,6 +70,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.05);
       margin-bottom: 2em;
+      position: relative;
     }
     h2, h3 {
       text-align: center;
@@ -95,11 +100,19 @@
       background-color: var(--btn-bg);
       color: var(--btn-fg);
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: background 0.3s ease, transform 0.2s ease;
       -webkit-tap-highlight-color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
     button:hover {
       background-color: #1976d2;
+      transform: translateY(-2px);
+    }
+    button:active {
+      transform: translateY(0);
     }
     button:focus {
       outline: none;
@@ -107,17 +120,21 @@
     }
     .table-wrapper {
       overflow-x: auto;
+      margin-top: 10px;
     }
     table {
       width: 100%;
       min-width: 800px;
       border-collapse: collapse;
-      margin-top: 1em;
     }
     th, td {
       border: 1px solid #ccc;
-      padding: 0.5em;
+      padding: 0.75em;
       text-align: center;
+    }
+    th {
+      background-color: rgba(33, 150, 243, 0.1);
+      font-weight: bold;
     }
     #darkToggle {
       position: fixed;
@@ -134,6 +151,7 @@
       justify-content: center;
       cursor: pointer;
       transition: background-color 0.5s ease, color 0.5s ease;
+      z-index: 100;
     }
     #darkToggle svg {
       width: 20px;
@@ -152,6 +170,7 @@
     textarea:focus,
     select:focus {
       box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.5);
+      border-color: var(--accent);
     }
     input,
     textarea,
@@ -162,7 +181,7 @@
     input {
       background-color: white;
       color: black;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
     }
 
     /* 深色模式 */
@@ -171,12 +190,162 @@
       color: #f0f0f0;
       border: 1px solid #555;
     }
+    
+    /* 改进的清空按钮样式 */
+    #clearLog {
+      background-color: var(--danger);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 500;
+      margin: 0 0 12px auto; /* 上 右 下 左 */
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+    
+    #clearLog:hover {
+      background-color: #b71c1c;
+      box-shadow: 0 4px 8px rgba(211, 47, 47, 0.3);
+    }
+    
+    #clearLog:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.3);
+    }
+    
+    #clearLog i {
+      font-size: 1.1em;
+    }
+    
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .confirmation-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .confirmation-modal.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .modal-content {
+      background: var(--card-bg);
+      padding: 2em;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+    
+    .modal-content h3 {
+      margin-top: 0;
+      color: var(--danger);
+    }
+    
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      margin-top: 1.5em;
+    }
+    
+    .modal-buttons button {
+      min-width: 100px;
+      padding: 0.75em 1.5em;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    
+    .modal-buttons .confirm-btn {
+      background-color: var(--danger);
+    }
+    
+    .modal-buttons .cancel-btn {
+      background-color: #757575;
+    }
+    
+    .log-count {
+      font-size: 0.9em;
+      color: #666;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    
+    .dark .log-count {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ccc;
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .form-row {
+        flex-direction: column;
+      }
+      
+      .form-row input, 
+      .form-row select {
+        width: 100%;
+      }
+      
+      #clearLog {
+        position: static;
+        margin: 0 0 15px auto;
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .card {
+        padding: 1em;
+      }
+    }
   </style>
 </head>
 <body>
   <button id="darkToggle" onclick="toggleDarkMode()">
     <svg viewBox="0 0 24 24"><path d="M12 2a9.93 9.93 0 00-7.07 2.93A10.01 10.01 0 0012 22a10 10 0 000-20zm0 18a7.93 7.93 0 01-5.66-2.34A8 8 0 0112 4a8 8 0 010 16z"/></svg>
   </button>
+  
+  <div class="confirmation-modal" id="confirmationModal">
+    <div class="modal-content">
+      <h3>确认清空记录</h3>
+      <p>您确定要清空所有点名记录吗？此操作不可撤销！</p>
+      <div class="modal-buttons">
+        <button class="confirm-btn" onclick="confirmClearLog()">
+          <i class="fas fa-check"></i> 确认
+        </button>
+        <button class="cancel-btn" onclick="cancelClearLog()">
+          <i class="fas fa-times"></i> 取消
+        </button>
+      </div>
+    </div>
+  </div>
+  
   <div class="container">
     <div class="card">
       <h2>业余无线电点名记录工具</h2>
@@ -192,14 +361,26 @@
         <input id="report" placeholder="信号报告" value="59" />
       </div>
       <div class="form-row">
-        <button onclick="addLog()" id="addLogBtn">添加记录</button>
-        <button id="undoBtn" onclick="undoLastLog()" disabled>撤销操作</button>
+        <button onclick="addLog()" id="addLogBtn">
+          <i class="fas fa-plus-circle"></i> 添加记录
+        </button>
+        <button id="undoBtn" onclick="undoLastLog()" disabled>
+          <i class="fas fa-undo"></i> 撤销操作
+        </button>
       </div>
     </div>
 
     <div class="card">
-      <h3>点名记录</h3>
-      <div style="overflow-x:auto">
+      <div class="table-header">
+        <h3>点名记录</h3>
+        <div class="log-count" id="logCount">0 条记录</div>
+      </div>
+      
+      <button id="clearLog" onclick="showClearConfirmation()">
+        <i class="fas fa-trash-alt"></i> 清空所有记录
+      </button>
+      
+      <div class="table-wrapper">
         <table id="logTable">
           <thead>
             <tr>
@@ -218,7 +399,6 @@
           </thead>
           <tbody></tbody>
         </table>
-        <button onclick="clearLog()">清空所有记录</button>
       </div>
     </div>
 
@@ -226,60 +406,77 @@
       <h3>设备词典管理</h3>
       <div class="form-row">
         <input id="newDevice" placeholder="添加设备名称" />
-        <button onclick="addDevice()">添加到设备词典</button>
+        <button onclick="addDevice()">
+          <i class="fas fa-plus"></i> 添加到设备词典
+        </button>
       </div>
       <div class="form-row">
         <input type="file" id="deviceFileInput" accept=".txt" />
-        <button onclick="importDeviceFromFile()">导入设备词库</button>
+        <button onclick="importDeviceFromFile()">
+          <i class="fas fa-file-import"></i> 导入设备词库
+        </button>
       </div>
 
       <h3>天线词典管理</h3>
       <div class="form-row">
         <input id="newAntenna" placeholder="添加天线名称" />
-        <button onclick="addAntenna()">添加到天线词典</button>
+        <button onclick="addAntenna()">
+          <i class="fas fa-plus"></i> 添加到天线词典
+        </button>
       </div>
       <div class="form-row">
         <input type="file" id="antennaFileInput" accept=".txt" />
-        <button onclick="importAntennaFromFile()">导入天线词库</button>
+        <button onclick="importAntennaFromFile()">
+          <i class="fas fa-file-import"></i> 导入天线词库
+        </button>
       </div>
-    
+
       <h3>呼号词典管理</h3>
       <div class="form-row">
         <input id="newCallsign" placeholder="添加呼号" />
-        <button onclick="addCallsign()">添加到呼号词典</button>
+        <button onclick="addCallsign()">
+          <i class="fas fa-plus"></i> 添加到呼号词典
+        </button>
       </div>
 
       <div class="form-row">
         <input type="file" id="callsignFileInput" accept=".txt" />
-        <button onclick="importCallsignFromFile()">导入呼号词库</button>
+        <button onclick="importCallsignFromFile()">
+          <i class="fas fa-file-import"></i> 导入呼号词库
+        </button>
       </div>
 
       <h3>QTH词典管理</h3>
       <div class="form-row">
-        <input id="newQth" placeholder="添加QTH" />
-        <button onclick="addQth()">添加到QTH词典</button>
+        <input id="newQTH" placeholder="添加QTH" />
+        <button onclick="addQTH()">
+          <i class="fas fa-plus"></i> 添加到QTH词典
+        </button>
       </div>
       <div class="form-row">
         <input type="file" id="qthFileInput" accept=".txt" />
-        <button onclick="importQthFromFile()">导入QTH词库</button>
+        <button onclick="importQTHFromFile()">
+          <i class="fas fa-file-import"></i> 导入QTH词库
+        </button>
       </div>
     </div>
-    
+
     <div class="card">
       <h3>导出文件</h3>
       <div class="form-row">
-        <button onclick="exportJSON()">导出 JSON</button>
+        <button onclick="exportJSON()">
+          <i class="fas fa-file-export"></i> 导出 JSON
+        </button>
         <input type="file" id="importJsonFile" accept=".json" style="display:none" onchange="importJSON(event)" />
-        <button onclick="document.getElementById('importJsonFile').click()">导入 JSON</button>
-        <button onclick="exportExcel()">导出 Excel</button>
+        <button onclick="document.getElementById('importJsonFile').click()">
+          <i class="fas fa-file-import"></i> 导入 JSON
+        </button>
+        <button onclick="exportExcel()">
+          <i class="fas fa-file-excel"></i> 导出 Excel
+        </button>
       </div>
     </div>
   </div>
-
-  <datalist id="deviceList"></datalist>
-  <datalist id="antennaList"></datalist>
-  <datalist id="callsignList"></datalist>
-  <datalist id="qthList"></datalist>
 
   <footer style="text-align:center; margin-top:2em; font-size:0.8em; color: #555;">
     作者 Mazha0309 / BG5CRL
@@ -288,22 +485,27 @@
     <!-- GitHub 图标 -->
     <a href="https://github.com/Mazha0309/BG5CRL-Log-tool" target="_blank" title="GitHub 仓库"
        style="display: inline-block; width: 24px; height: 24px; margin: 0 10px; opacity: 0.6;">
-      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg" alt="GitHub" style="width: 100%; height: 100%; filter: invert(40%);" />
+      
     </a>
 
     <!-- Gitee 图标 -->
     <a href="https://gitee.com/Mazha0309/BG5CRL-Log-tool" target="_blank" title="Gitee 仓库"
        style="display: inline-block; width: 24px; height: 24px; margin: 0 10px; opacity: 0.6;">
-      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/gitee.svg" alt="Gitee" style="width: 100%; height: 100%; filter: invert(40%);" />
+      
     </a>
 
     <!-- GitCode 图标-->
     <a href="https://gitcode.com/Mazha0309/BG5CRL-Log-tool" target="_blank" title="GitCode 仓库"
        style="display: inline-block; width: 24px; height: 24px; margin: 0 10px; opacity: 0.6;">
-      <img src="/gitcode.svg" alt="Gitcode" style="width: 100%; height: 100%; filter: invert(40%);" />
+      
     </a>
   </footer>
-  
+
+  <datalist id="deviceList"></datalist>
+  <datalist id="antennaList"></datalist>
+  <datalist id="callsignList"></datalist>
+  <datalist id="qthList"></datalist>
+
   <script>
     /*********************
      * 全局变量声明
@@ -321,7 +523,7 @@
     /*********************
      * 工具函数
      *********************/
-    
+
     /**
      * 获取当前时间字符串（格式: HH:mm）
      * @returns {string} 当前时间字符串
@@ -365,10 +567,14 @@
 
         // 操作按钮单元格
         const actionTd = document.createElement("td");
-    
+        actionTd.style.display = "flex";
+        actionTd.style.gap = "8px";
+
         // 编辑按钮
         const editBtn = document.createElement("button");
-        editBtn.textContent = "编辑";
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        editBtn.title = "编辑记录";
+        editBtn.className = "edit-btn";
         editBtn.onclick = () => {
           const [time, controller, callsign, report, qth, device, power, antenna, height] = logData[index];
 
@@ -386,32 +592,55 @@
 
           editIndex = index;
           document.getElementById("addLogBtn").textContent = "更新记录";
+          document.getElementById("addLogBtn").innerHTML = '<i class="fas fa-sync"></i> 更新记录';
         };
         actionTd.appendChild(editBtn);
 
         // 删除按钮
         const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "删除";
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.title = "删除记录";
+        deleteBtn.className = "delete-btn";
         deleteBtn.onclick = () => {
           if (confirm("确定要删除这条记录吗？")) {
             logData.splice(index, 1);
             localStorage.setItem("logData", JSON.stringify(logData));
             renderTable();
+            updateLogCount();
           }
         };
         actionTd.appendChild(deleteBtn);
-        
+
         tr.appendChild(actionTd);
         tbody.appendChild(tr);
       });
 
       updateUndoButton();
+      updateLogCount();
+    }
+    
+    /**
+     * 更新日志计数
+     */
+    function updateLogCount() {
+      const count = logData.length;
+      const logCountEl = document.getElementById('logCount');
+      logCountEl.textContent = `${count} 条记录`;
+      
+      // 根据数量改变样式
+      if(count > 0) {
+        logCountEl.style.color = '#388e3c';
+        logCountEl.style.fontWeight = 'bold';
+      } else {
+        logCountEl.style.color = '';
+        logCountEl.style.fontWeight = '';
+      }
     }
 
     /*********************
      * 日志操作函数
      *********************/
-    
+
     /**
      * 添加日志记录
      */
@@ -441,11 +670,11 @@
       if (editIndex >= 0) {
         logData[editIndex] = row;
         editIndex = -1;
-        document.getElementById("addLogBtn").textContent = "添加记录";
+        document.getElementById("addLogBtn").innerHTML = '<i class="fas fa-plus-circle"></i> 添加记录';
       } else {
         logData.push(row);
       }
-      
+
       function resetForm() {
         const ids = [
           "callsign", "report",
@@ -468,38 +697,40 @@
 
         console.log("表单已重置");
       }
-      
+
       localStorage.setItem("logData", JSON.stringify(logData));
       renderTable();
       resetForm();
       document.getElementById("callsign").focus();
     }
-    
+
     /**
      * 清空日志
      */
     function clearLog() {
-      if (confirm("确定清空所有记录？")) {
-        logData = [];
-        localStorage.removeItem("logData");
-        renderTable();
+      logData = [];
+      localStorage.removeItem("logData");
+      renderTable();
+      updateLogCount();
 
-        // 清空除主控呼号外的所有相关输入框
-        const fieldsToClear = [
-          "callsign", "report", "qth", "device",
-          "power", "antenna", "height", "time"
-        ];
-        fieldsToClear.forEach(id => {
-          const element = document.getElementById(id);
-          if (element) {
-            if (id === "report") {
-              element.value = "59";
-            } else {
-              element.value = "";
-            }
+      // 清空除主控呼号外的所有相关输入框
+      const fieldsToClear = [
+        "callsign", "report", "qth", "device",
+        "power", "antenna", "height", "time"
+      ];
+      fieldsToClear.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          if (id === "report") {
+            element.value = "59";
+          } else {
+            element.value = "";
           }
-        });
-      }
+        }
+      });
+      
+      // 关闭确认对话框
+      document.getElementById('confirmationModal').classList.remove('active');
     }
 
     /**
@@ -513,19 +744,45 @@
       logData.pop();
       localStorage.setItem("logData", JSON.stringify(logData));
       renderTable();
+      updateLogCount();
+    }
+    
+    /**
+     * 显示清空确认对话框
+     */
+    function showClearConfirmation() {
+      if(logData.length === 0) {
+        alert("当前没有记录可清空！");
+        return;
+      }
+      document.getElementById('confirmationModal').classList.add('active');
+    }
+    
+    /**
+     * 确认清空日志
+     */
+    function confirmClearLog() {
+      clearLog();
+    }
+    
+    /**
+     * 取消清空日志
+     */
+    function cancelClearLog() {
+      document.getElementById('confirmationModal').classList.remove('active');
     }
 
     /*********************
      * 词典管理函数
      *********************/
-    
+
     /**
      * 添加新设备到词典
      */
     function addDevice() {
       const input = document.getElementById("newDevice");
       const val = input.value.trim();
-      
+
       if (val && !deviceDict.includes(val)) {
         deviceDict.push(val);
         deviceDict.sort();
@@ -542,7 +799,7 @@
       const fileInput = document.getElementById("deviceFileInput");
       const file = fileInput.files[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
       reader.onload = e => {
         let lines = e.target.result.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
@@ -562,7 +819,7 @@
     function addAntenna() {
       const input = document.getElementById("newAntenna");
       const val = input.value.trim();
-      
+
       if (val && !antennaDict.includes(val)) {
         antennaDict.push(val);
         antennaDict.sort();
@@ -579,7 +836,7 @@
       const fileInput = document.getElementById("antennaFileInput");
       const file = fileInput.files[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
       reader.onload = e => {
         let lines = e.target.result.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
@@ -599,7 +856,7 @@
     function addCallsign() {
       const input = document.getElementById("newCallsign");
       const val = input.value.trim();
-      
+
       if (val && !callsignDict.includes(val)) {
         callsignDict.push(val);
         callsignDict.sort();
@@ -616,7 +873,7 @@
       const fileInput = document.getElementById("callsignFileInput");
       const file = fileInput.files[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
       reader.onload = e => {
         let lines = e.target.result.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
@@ -633,10 +890,10 @@
     /**
      * 添加新QTH到词典
      */
-    function addQth() {
-      const input = document.getElementById("newQth");
+    function addQTH() {
+      const input = document.getElementById("newQTH");
       const val = input.value.trim();
-      
+
       if (val && !qthDict.includes(val)) {
         qthDict.push(val);
         qthDict.sort();
@@ -649,11 +906,11 @@
     /**
      * 从文件导入QTH词典
      */
-    function importQthFromFile() {
+    function importQTHFromFile() {
       const fileInput = document.getElementById("qthFileInput");
       const file = fileInput.files[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
       reader.onload = e => {
         let lines = e.target.result.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
@@ -670,7 +927,7 @@
     /*********************
      * 导入导出函数
      *********************/
-    
+
     /**
      * 导出Excel文件
      */
@@ -688,17 +945,17 @@
 
       // 全局序号计数器（从1开始）
       let globalIndex = 1;
-  
+
       for (const controller in grouped) {
         // 获取该组第一条记录的时间
         const firstTime = grouped[controller][0][0];
-    
+
         // 智能计算主控时间：减1分钟并智能取整
         const controllerTime = calculateControllerTime(firstTime);
-    
+
         // 主控信息行
         ws_data.push(["点名主控:", controllerTime, controller, ...Array(7).fill("")]);
-    
+
         grouped[controller].forEach(r => {
           const [time, , callsign, report, qth, device, power, antenna, height] = r;
           // 使用全局连续序号
@@ -752,7 +1009,7 @@
         for (let C = range.s.c; C <= range.e.c; ++C) {
           const cell_ref = XLSX.utils.encode_cell({r: R, c: C});
           if (!ws[cell_ref]) ws[cell_ref] = {t: 's', v: ''};
-      
+
           if (R === 0) {
             ws[cell_ref].s = headerStyle;
           } else if (ws_data[R][0] === "点名主控:") {
@@ -776,10 +1033,10 @@
       // 创建文件
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "点名记录");
-  
+
       const now = new Date();
       const filename = `点名记录_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;
-  
+
       XLSX.writeFile(wb, filename);
     }
 
@@ -793,36 +1050,36 @@
     function calculateControllerTime(timeStr) {
       // 处理空值情况
       if (!timeStr) return "";
-  
+
       // 减去1分钟得到基础时间
       const baseTime = subtractOneMinute(timeStr);
-  
+
       // 提取小时和分钟
       const timeParts = baseTime.split(':');
       const hours = parseInt(timeParts[0], 10);
       let minutes = parseInt(timeParts[1], 10);
-  
+
       // 如果分钟数已经是5或10的倍数，直接返回
       if (minutes % 5 === 0) return baseTime;
-  
+
       // 计算最接近的5/10倍数时间
       const nearestFive = Math.round(minutes / 5) * 5;
       const nearestTen = Math.round(minutes / 10) * 10;
-     
+
       // 计算与5/10倍数的差距
       const diffToFive = Math.abs(minutes - nearestFive);
       const diffToTen = Math.abs(minutes - nearestTen);
-  
+
       // 优先处理10的倍数
       if (diffToTen === 1) {
         return formatTime(hours, nearestTen, timeParts[2]);
       }
-  
+
       // 其次处理5的倍数
       if (diffToFive === 1) {
         return formatTime(hours, nearestFive, timeParts[2]);
       }
-  
+
       // 否则返回减去1分钟后的时间
       return baseTime;
     }
@@ -837,21 +1094,21 @@
       const timeParts = timeStr.split(':');
       let hours = parseInt(timeParts[0], 10);
       let minutes = parseInt(timeParts[1], 10);
-  
+
       // 减去1分钟
       minutes -= 1;
-  
+
       // 处理分钟负数（跨小时）
       if (minutes < 0) {
         minutes = 59;
         hours -= 1;
-    
+
         // 处理小时负数（跨天）
         if (hours < 0) {
           hours = 23;
         }
       }
-  
+
       // 返回时间字符串（保留原始秒数部分如果存在）
       return formatTime(hours, minutes, timeParts[2]);
     }
@@ -867,13 +1124,13 @@
       // 格式化为两位数
       const formattedHours = hours.toString().padStart(2, '0');
       const formattedMinutes = minutes.toString().padStart(2, '0');
-  
+
       // 返回时间字符串
       return seconds !== undefined 
         ? `${formattedHours}:${formattedMinutes}:${seconds}`
         : `${formattedHours}:${formattedMinutes}`;
     }
-    
+
     /**
      * 导出JSON文件
      */
@@ -898,16 +1155,17 @@
     function importJSON(event) {
       const file = event.target.files[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
       reader.onload = e => {
         try {
           const importedData = JSON.parse(e.target.result);
           if (!Array.isArray(importedData)) throw new Error("JSON格式错误，应该是数组");
-          
+
           logData = importedData;
           localStorage.setItem("logData", JSON.stringify(logData));
           renderTable();
+          updateLogCount();
           alert("导入成功！");
         } catch (err) {
           alert("导入失败：" + err.message);
@@ -920,18 +1178,19 @@
     /*********************
      * 主题切换函数
      *********************/
-    
+
     /**
      * 切换暗色/亮色模式
      */
     function toggleDarkMode() {
       document.body.classList.toggle("dark");
+      localStorage.setItem('darkMode', document.body.classList.contains('dark'));
     }
 
     /*********************
      * 初始化函数
      *********************/
-    
+
     /**
      * 从GitHub加载词典数据
      */
@@ -947,12 +1206,25 @@
         const deviceText = await deviceRes.text();
         const deviceLines = deviceText.split(/\r?\n/).filter(l => l.trim());
         updateDeviceDict(deviceLines);
-        
+
         // 加载天线词典
         const antennaRes = await fetch(antennaDictURL);
         const antennaText = await antennaRes.text();
         const antennaLines = antennaText.split(/\r?\n/).filter(l => l.trim());
         updateAntennaDict(antennaLines);
+        
+        // 加载呼号词典
+        const callsignRes = await fetch(callsignDictURL);
+        const callsignText = await callsignRes.text();
+        const callsignLines = callsignText.split(/\r?\n/).filter(l => l.trim());
+        updateCallsignDict(callsignLines);
+
+        // 加载QTH词典
+        const qthRes = await fetch(qthDictURL);
+        const qthText = await qthRes.text();
+        const qthLines = qthText.split(/\r?\n/).filter(l => l.trim());
+        updateQTHDict(qthLines);
+
       } catch (err) {
         console.error("词典加载失败:", err);
       }
@@ -985,26 +1257,64 @@
       antennaDict = Array.from(antennaSet).sort();
       renderDict("antennaList", antennaDict);
     }
+    
+    /**
+     * 更新呼号词典
+     * @param {Array} lines - 呼号名称数组
+     */
+    function updateCallsignDict(lines) {
+      const callsignSet = new Set(callsignDict);
+      lines.forEach(line => {
+        const item = line.trim();
+        if (item) callsignSet.add(item);
+      });
+      callsignDict = Array.from(callsignSet).sort();
+      renderDict("callsignList", callsignDict);
+    }
+
+/**
+     * 更新QTH词典
+     * @param {Array} lines - qth名称数组
+     */
+    function updateQTHDict(lines) {
+      const qthSet = new Set(qthDict);
+      lines.forEach(line => {
+        const item = line.trim();
+        if (item) qthSet.add(item);
+      });
+      qthDict = Array.from(qthSet).sort();
+      renderDict("qthList", qthDict);
+    }
 
     /*********************
      * 页面初始化
      *********************/
     window.addEventListener("DOMContentLoaded", () => {
+      // 初始化暗色模式
+      if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+      }
+      
       // 渲染词典和表格
       renderDict("deviceList", deviceDict);
       renderDict("antennaList", antennaDict);
+      renderDict("callsignList", callsignDict);
+      renderDict("qthList", qthDict);
       renderTable();
-      
+      updateLogCount();
+
       // 加载远程词典
       loadDictionaries();
-      
+
       // 页面卸载时清理部分本地存储
       window.addEventListener('beforeunload', () => {
         localStorage.removeItem('deviceDict');
         localStorage.removeItem('antennaDict');
+        localStorage.removeItem('callsignDict');
+        localStorage.removeItem('qthDict');
       });
     });
-    
+
     function updateUndoButton() {
       const btn = document.getElementById("undoBtn");
       if (btn) {
