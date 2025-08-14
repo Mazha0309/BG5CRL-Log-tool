@@ -199,6 +199,30 @@
     </div>
 
     <div class="card">
+      <h3>点名记录</h3>
+      <div style="overflow-x:auto">
+        <table id="logTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>时间</th>
+              <th>点名主控</th>
+              <th>呼号</th>
+              <th>信号报告</th>
+              <th>QTH</th>
+              <th>设备</th>
+              <th>功率</th>
+              <th>天线</th>
+              <th>高度</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
       <h3>设备词典管理</h3>
       <div class="form-row">
         <input id="newDevice" placeholder="添加设备名称" />
@@ -227,30 +251,6 @@
         <input type="file" id="importJsonFile" accept=".json" style="display:none" onchange="importJSON(event)" />
         <button onclick="document.getElementById('importJsonFile').click()">导入 JSON</button>
         <button onclick="exportExcel()">导出 Excel</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>点名记录</h3>
-      <div style="overflow-x:auto">
-        <table id="logTable">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>时间</th>
-              <th>点名主控</th>
-              <th>呼号</th>
-              <th>信号报告</th>
-              <th>QTH</th>
-              <th>设备</th>
-              <th>功率</th>
-              <th>天线</th>
-              <th>高度</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
       </div>
     </div>
   </div>
