@@ -181,15 +181,15 @@
     <div class="card">
       <h2>业余无线电点名记录工具</h2>
       <div class="form-row">
-        <input id="controller" placeholder="点名主控呼号" />
-        <input id="time" placeholder="时间（可选，默认当前）" />
-        <input id="callsign" placeholder="呼号" />
-        <input id="report" placeholder="信号报告" />
-        <input id="qth" placeholder="QTH" />
+        <input id="controller" placeholder="主控呼号" />
+        <input id="callsign" list="callsignList" placeholder="点名呼号" />
         <input id="device" list="deviceList" placeholder="设备" />
         <input id="power" placeholder="功率" />
-        <input id="antenna" list="antennaList" placeholder="天线" />
+        <input id="qth" list="qthList" placeholder="QTH" />
         <input id="height" placeholder="高度" />
+        <input id="time" placeholder="时间" />
+        <input id="report" placeholder="信号报告" value="59" />
+        <input id="antenna" list="antennaList" placeholder="天线" />
       </div>
       <div class="form-row">
         <button onclick="clearLog()">清空记录</button>
@@ -244,6 +244,27 @@
       </div>
     </div>
     
+    <h3>呼号词典管理</h3>
+    <div class="form-row">
+      <input id="newCallsign" placeholder="添加呼号" />
+      <button onclick="addCallsign()">添加到呼号词典</button>
+    </div>
+    <div class="form-row">
+      <input type="file" id="callsignFileInput" accept=".txt" />
+      <button onclick="importCallsignFromFile()">导入呼号词库</button>
+    </div>
+
+    <h3>QTH词典管理</h3>
+    <div class="form-row">
+      <input id="newQth" placeholder="添加QTH" />
+      <button onclick="addQth()">添加到QTH词典</button>
+    </div>
+    <div class="form-row">
+      <input type="file" id="qthFileInput" accept=".txt" />
+      <button onclick="importQthFromFile()">导入QTH词库</button>
+    </div>
+  </div>
+    
     <div class="card">
       <h3>导出文件</h3>
       <div class="form-row">
@@ -257,6 +278,8 @@
 
   <datalist id="deviceList"></datalist>
   <datalist id="antennaList"></datalist>
+  <datalist id="callsignList"></datalist>
+  <datalist id="qthList"></datalist>
 
   <footer style="text-align:center; margin-top:2em; font-size:0.8em; color: #555;">
     作者 Mazha0309 / BG5CRL
@@ -291,6 +314,8 @@
     let deviceDict = JSON.parse(localStorage.getItem('deviceDict') || '[]');
     // 天线词典，从本地存储加载
     let antennaDict = JSON.parse(localStorage.getItem('antennaDict') || '[]');
+    let callsignDict = JSON.parse(localStorage.getItem('callsignDict') || '[]');
+    let qthDict = JSON.parse(localStorage.getItem('qthDict') || '[]');
     let editIndex = -1; // -1 表示不是编辑状态
 
     /*********************
@@ -431,8 +456,8 @@
         for (const id of ids) {
           const el = document.getElementById(id);
           if (el) {
-            if (id === "time") {
-              el.value = "";
+            if (id === "report") {
+              el.value = "59";
             } else {
               el.value = "";
             }
@@ -442,11 +467,12 @@
         }
 
         console.log("表单已重置");
-      } 
+      }
       
       localStorage.setItem("logData", JSON.stringify(logData));
       renderTable();
       resetForm();
+      document.getElementById("callsign").focus();
     }
     
     /**
@@ -457,6 +483,22 @@
         logData = [];
         localStorage.removeItem("logData");
         renderTable();
+
+        // 清空除主控呼号外的所有相关输入框
+        const fieldsToClear = [
+          "callsign", "report", "qth", "device",
+          "power", "antenna", "height", "time"
+        ];
+        fieldsToClear.forEach(id => {
+          const element = document.getElementById(id);
+          if (element) {
+            if (id === "report") {
+              element.value = "59";
+            } else {
+              element.value = "";
+            }
+          }
+        });
       }
     }
 
@@ -546,6 +588,80 @@
         antennaDict = Array.from(currentSet).sort();
         localStorage.setItem("antennaDict", JSON.stringify(antennaDict));
         renderDict("antennaList", antennaDict);
+        fileInput.value = "";
+      };
+      reader.readAsText(file);
+    }
+
+    /**
+     * 添加新呼号到词典
+     */
+    function addCallsign() {
+      const input = document.getElementById("newCallsign");
+      const val = input.value.trim();
+      
+      if (val && !callsignDict.includes(val)) {
+        callsignDict.push(val);
+        callsignDict.sort();
+        localStorage.setItem("callsignDict", JSON.stringify(callsignDict));
+        renderDict("callsignList", callsignDict);
+      }
+      input.value = "";
+    }
+
+    /**
+     * 从文件导入呼号词典
+     */
+    function importCallsignFromFile() {
+      const fileInput = document.getElementById("callsignFileInput");
+      const file = fileInput.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = e => {
+        let lines = e.target.result.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+        const currentSet = new Set(callsignDict);
+        lines.forEach(l => currentSet.add(l));
+        callsignDict = Array.from(currentSet).sort();
+        localStorage.setItem("callsignDict", JSON.stringify(callsignDict));
+        renderDict("callsignList", callsignDict);
+        fileInput.value = "";
+      };
+      reader.readAsText(file);
+    }
+
+    /**
+     * 添加新QTH到词典
+     */
+    function addQth() {
+      const input = document.getElementById("newQth");
+      const val = input.value.trim();
+      
+      if (val && !qthDict.includes(val)) {
+        qthDict.push(val);
+        qthDict.sort();
+        localStorage.setItem("qthDict", JSON.stringify(qthDict));
+        renderDict("qthList", qthDict);
+      }
+      input.value = "";
+    }
+
+    /**
+     * 从文件导入QTH词典
+     */
+    function importQthFromFile() {
+      const fileInput = document.getElementById("qthFileInput");
+      const file = fileInput.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = e => {
+        let lines = e.target.result.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+        const currentSet = new Set(qthDict);
+        lines.forEach(l => currentSet.add(l));
+        qthDict = Array.from(currentSet).sort();
+        localStorage.setItem("qthDict", JSON.stringify(qthDict));
+        renderDict("qthList", qthDict);
         fileInput.value = "";
       };
       reader.readAsText(file);
