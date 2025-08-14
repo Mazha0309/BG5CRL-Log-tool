@@ -85,6 +85,5 @@ P.S.在访问本网站时请尽量使用chromium内核的浏览器
 
 **作者**: Mazha0309 / BG5CRL
 
-**贡献者**：BG5DNQ BG5ETW  
 
 欢迎反馈和贡献代码！使用中遇到问题或有改进建议，请提交Issue或Pull Request。
