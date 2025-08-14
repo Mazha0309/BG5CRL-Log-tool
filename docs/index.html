@@ -38,6 +38,7 @@
       --input-bg: #ffffff;
       --accent: #2196f3;
       --danger: #d32f2f;
+      --dict-accent: #4caf50;
     }
     body.dark {
       --bg: #121212;
@@ -48,6 +49,7 @@
       --input-bg: #333;
       --accent: #90caf9;
       --danger: #b71c1c;
+      --dict-accent: #2e7d32;
     }
     body {
       margin: 0;
@@ -191,7 +193,32 @@
       border: 1px solid #555;
     }
     
-    /* 改进的清空按钮样式 */
+    /* 修复表格标题区域布局 */
+    .table-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    
+    .log-count {
+      font-size: 0.9em;
+      color: #666;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+      order: 1; /* 确保在小屏幕上正确换行 */
+    }
+    
+    .dark .log-count {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ccc;
+    }
+    
+    /* 修复清空按钮位置 */
     #clearLog {
       background-color: var(--danger);
       color: white;
@@ -199,14 +226,11 @@
       border-radius: 8px;
       border: none;
       font-weight: 500;
-      margin: 0 0 12px auto; /* 上 右 下 左 */
       display: flex;
       align-items: center;
       gap: 8px;
       transition: all 0.3s ease;
-      position: absolute;
-      top: 20px;
-      right: 20px;
+      margin-left: auto; /* 确保在右侧 */
     }
     
     #clearLog:hover {
@@ -223,11 +247,23 @@
       font-size: 1.1em;
     }
     
-    .table-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .log-count {
+        order: 0;
+        margin-bottom: 10px;
+      }
+      
+      #clearLog {
+        width: 100%;
+        margin-left: 0;
+        justify-content: center;
+      }
     }
     
     .confirmation-modal {
@@ -288,18 +324,123 @@
       background-color: #757575;
     }
     
-    .log-count {
-      font-size: 0.9em;
-      color: #666;
-      background: rgba(0, 0, 0, 0.05);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-weight: 500;
+    /* 词库折叠组件样式 */
+    .dictionary-manager {
+      border: 1px solid rgba(33, 150, 243, 0.2);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      background: rgba(33, 150, 243, 0.05);
+      transition: all 0.3s ease;
     }
     
-    .dark .log-count {
-      background: rgba(255, 255, 255, 0.1);
-      color: #ccc;
+    .dictionary-manager.active {
+      background: rgba(33, 150, 243, 0.08);
+      border-color: var(--accent);
+    }
+    
+    .dict-header {
+      padding: 12px 15px;
+      background: rgba(33, 150, 243, 0.1);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.3s ease;
+    }
+    
+    .dict-header:hover {
+      background: rgba(33, 150, 243, 0.15);
+    }
+    
+    .dict-header h3 {
+      margin: 0;
+      color: var(--accent);
+      font-size: 1.1em;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+    
+    .dict-header i {
+      transition: transform 0.3s ease;
+      color: var(--accent);
+      font-size: 1.1em;
+    }
+    
+    .dictionary-manager.active .dict-header i {
+      transform: rotate(180deg);
+    }
+    
+    .dict-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      padding: 0 15px;
+    }
+    
+    .dictionary-manager.active .dict-content {
+      max-height: 500px;
+      padding: 15px;
+    }
+    
+    /* 折叠状态指示器 */
+    .toggle-indicator {
+      color: var(--accent);
+      font-size: 1.2em;
+    }
+    
+    /* 添加折叠/展开全部按钮 */
+    .toggle-all-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    
+    .toggle-all-btn {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    
+    .toggle-all-btn:hover {
+      background-color: #1976d2;
+      transform: translateY(-2px);
+    }
+    
+    .toggle-all-btn:active {
+      transform: translateY(0);
+    }
+    
+    /* 深色模式下的按钮样式 */
+    .dark .toggle-all-btn {
+      background-color: #0d47a1;
+    }
+    
+    .dark .toggle-all-btn:hover {
+      background-color: #093070;
+    }
+    
+    /* 导出按钮布局 */
+    .export-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .export-buttons button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1em;
+      text-align: center;
     }
     
     /* 响应式调整 */
@@ -313,15 +454,40 @@
         width: 100%;
       }
       
-      #clearLog {
-        position: static;
-        margin: 0 0 15px auto;
-        width: 100%;
-        justify-content: center;
-      }
-      
       .card {
         padding: 1em;
+      }
+      
+      .dictionary-manager {
+        margin-bottom: 0.8rem;
+      }
+      
+      .dict-header {
+        padding: 10px 12px;
+      }
+      
+      .dict-content {
+        padding: 0 10px;
+      }
+      
+      .dictionary-manager.active .dict-content {
+        padding: 10px;
+      }
+      
+      .export-buttons button {
+        width: 100%;
+      }
+    }
+    
+    @media (min-width: 768px) {
+      .export-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      
+      .export-buttons button {
+        flex: 1;
+        min-width: 150px;
       }
     }
   </style>
@@ -357,7 +523,7 @@
         <input id="power" placeholder="功率" />
         <input id="qth" list="qthList" placeholder="QTH" />
         <input id="height" placeholder="高度" />
-        <input id="time" placeholder="时间(不填写时获取系统时间)" />
+        <input id="time" placeholder="时间" />
         <input id="report" placeholder="信号报告" value="59" />
       </div>
       <div class="form-row">
@@ -374,11 +540,10 @@
       <div class="table-header">
         <h3>点名记录</h3>
         <div class="log-count" id="logCount">0 条记录</div>
+        <button id="clearLog" onclick="showClearConfirmation()">
+          <i class="fas fa-trash-alt"></i> 清空所有记录
+        </button>
       </div>
-      
-      <button id="clearLog" onclick="showClearConfirmation()">
-        <i class="fas fa-trash-alt"></i> 清空所有记录
-      </button>
       
       <div class="table-wrapper">
         <table id="logTable">
@@ -403,67 +568,104 @@
     </div>
 
     <div class="card">
-      <h3>设备词典管理</h3>
-      <div class="form-row">
-        <input id="newDevice" placeholder="添加设备名称" />
-        <button onclick="addDevice()">
-          <i class="fas fa-plus"></i> 添加到设备词典
+      <h3>词库管理器</h3>
+      
+      <!-- 添加折叠/展开全部按钮 -->
+      <div class="toggle-all-container">
+        <button id="toggleAllBtn" class="toggle-all-btn" onclick="toggleAllDictionaries()">
+          <i class="fas fa-chevron-circle-down"></i> 展开全部词库
         </button>
       </div>
-      <div class="form-row">
-        <input type="file" id="deviceFileInput" accept=".txt" />
-        <button onclick="importDeviceFromFile()">
-          <i class="fas fa-file-import"></i> 导入设备词库
-        </button>
+      
+      <!-- 词库折叠组件 -->
+      <div class="dictionary-manager">
+        <div class="dict-header" onclick="toggleDictionary(this)">
+          <h3>设备词典管理</h3>
+          <i class="fas fa-chevron-down toggle-indicator"></i>
+        </div>
+        <div class="dict-content">
+          <div class="form-row">
+            <input id="newDevice" placeholder="添加设备名称" />
+            <button onclick="addDevice()">
+              <i class="fas fa-plus"></i> 添加到设备词典
+            </button>
+          </div>
+          <div class="form-row">
+            <input type="file" id="deviceFileInput" accept=".txt" />
+            <button onclick="importDeviceFromFile()">
+              <i class="fas fa-file-import"></i> 导入设备词库
+            </button>
+          </div>
+        </div>
       </div>
-
-      <h3>天线词典管理</h3>
-      <div class="form-row">
-        <input id="newAntenna" placeholder="添加天线名称" />
-        <button onclick="addAntenna()">
-          <i class="fas fa-plus"></i> 添加到天线词典
-        </button>
+      
+      <div class="dictionary-manager">
+        <div class="dict-header" onclick="toggleDictionary(this)">
+          <h3>天线词典管理</h3>
+          <i class="fas fa-chevron-down toggle-indicator"></i>
+        </div>
+        <div class="dict-content">
+          <div class="form-row">
+            <input id="newAntenna" placeholder="添加天线名称" />
+            <button onclick="addAntenna()">
+              <i class="fas fa-plus"></i> 添加到天线词典
+            </button>
+          </div>
+          <div class="form-row">
+            <input type="file" id="antennaFileInput" accept=".txt" />
+            <button onclick="importAntennaFromFile()">
+              <i class="fas fa-file-import"></i> 导入天线词库
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="form-row">
-        <input type="file" id="antennaFileInput" accept=".txt" />
-        <button onclick="importAntennaFromFile()">
-          <i class="fas fa-file-import"></i> 导入天线词库
-        </button>
+      
+      <div class="dictionary-manager">
+        <div class="dict-header" onclick="toggleDictionary(this)">
+          <h3>呼号词典管理</h3>
+          <i class="fas fa-chevron-down toggle-indicator"></i>
+        </div>
+        <div class="dict-content">
+          <div class="form-row">
+            <input id="newCallsign" placeholder="添加呼号" />
+            <button onclick="addCallsign()">
+              <i class="fas fa-plus"></i> 添加到呼号词典
+            </button>
+          </div>
+          <div class="form-row">
+            <input type="file" id="callsignFileInput" accept=".txt" />
+            <button onclick="importCallsignFromFile()">
+              <i class="fas fa-file-import"></i> 导入呼号词库
+            </button>
+          </div>
+        </div>
       </div>
-
-      <h3>呼号词典管理</h3>
-      <div class="form-row">
-        <input id="newCallsign" placeholder="添加呼号" />
-        <button onclick="addCallsign()">
-          <i class="fas fa-plus"></i> 添加到呼号词典
-        </button>
-      </div>
-
-      <div class="form-row">
-        <input type="file" id="callsignFileInput" accept=".txt" />
-        <button onclick="importCallsignFromFile()">
-          <i class="fas fa-file-import"></i> 导入呼号词库
-        </button>
-      </div>
-
-      <h3>QTH词典管理</h3>
-      <div class="form-row">
-        <input id="newQTH" placeholder="添加QTH" />
-        <button onclick="addQTH()">
-          <i class="fas fa-plus"></i> 添加到QTH词典
-        </button>
-      </div>
-      <div class="form-row">
-        <input type="file" id="qthFileInput" accept=".txt" />
-        <button onclick="importQTHFromFile()">
-          <i class="fas fa-file-import"></i> 导入QTH词库
-        </button>
+      
+      <div class="dictionary-manager">
+        <div class="dict-header" onclick="toggleDictionary(this)">
+          <h3>QTH词典管理</h3>
+          <i class="fas fa-chevron-down toggle-indicator"></i>
+        </div>
+        <div class="dict-content">
+          <div class="form-row">
+            <input id="newQth" placeholder="添加QTH" />
+            <button onclick="addQth()">
+              <i class="fas fa-plus"></i> 添加到QTH词典
+            </button>
+          </div>
+          <div class="form-row">
+            <input type="file" id="qthFileInput" accept=".txt" />
+            <button onclick="importQthFromFile()">
+              <i class="fas fa-file-import"></i> 导入QTH词库
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="card">
       <h3>导出文件</h3>
-      <div class="form-row">
+      <div class="export-buttons">
         <button onclick="exportJSON()">
           <i class="fas fa-file-export"></i> 导出 JSON
         </button>
@@ -519,6 +721,7 @@
     let callsignDict = JSON.parse(localStorage.getItem('callsignDict') || '[]');
     let qthDict = JSON.parse(localStorage.getItem('qthDict') || '[]');
     let editIndex = -1; // -1 表示不是编辑状态
+    let dictionariesCollapsed = true; // 词库折叠状态
 
     /*********************
      * 工具函数
@@ -634,6 +837,53 @@
       } else {
         logCountEl.style.color = '';
         logCountEl.style.fontWeight = '';
+      }
+    }
+
+    /*********************
+     * 词库折叠功能
+     *********************/
+    
+    /**
+     * 切换单个词库折叠状态
+     */
+    function toggleDictionary(header) {
+      const manager = header.parentElement;
+      manager.classList.toggle('active');
+      
+      // 更新按钮文本
+      updateToggleButtonText();
+    }
+    
+    /**
+     * 切换所有词库的折叠状态
+     */
+    function toggleAllDictionaries() {
+      dictionariesCollapsed = !dictionariesCollapsed;
+      
+      const managers = document.querySelectorAll('.dictionary-manager');
+      managers.forEach(manager => {
+        dictionariesCollapsed ? 
+          manager.classList.remove('active') : 
+          manager.classList.add('active');
+      });
+      
+      updateToggleButtonText();
+    }
+    
+    /**
+     * 更新折叠/展开按钮文本
+     */
+    function updateToggleButtonText() {
+      const toggleBtn = document.getElementById('toggleAllBtn');
+      const allActive = document.querySelectorAll('.dictionary-manager.active').length === 4;
+      
+      if (allActive) {
+        dictionariesCollapsed = false;
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-circle-up"></i> 折叠全部词库';
+      } else {
+        dictionariesCollapsed = true;
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-circle-down"></i> 展开全部词库';
       }
     }
 
@@ -890,8 +1140,8 @@
     /**
      * 添加新QTH到词典
      */
-    function addQTH() {
-      const input = document.getElementById("newQTH");
+    function addQth() {
+      const input = document.getElementById("newQth");
       const val = input.value.trim();
 
       if (val && !qthDict.includes(val)) {
@@ -906,7 +1156,7 @@
     /**
      * 从文件导入QTH词典
      */
-    function importQTHFromFile() {
+    function importQthFromFile() {
       const fileInput = document.getElementById("qthFileInput");
       const file = fileInput.files[0];
       if (!file) return;
@@ -1212,19 +1462,6 @@
         const antennaText = await antennaRes.text();
         const antennaLines = antennaText.split(/\r?\n/).filter(l => l.trim());
         updateAntennaDict(antennaLines);
-        
-        // 加载呼号词典
-        const callsignRes = await fetch(callsignDictURL);
-        const callsignText = await callsignRes.text();
-        const callsignLines = callsignText.split(/\r?\n/).filter(l => l.trim());
-        updateCallsignDict(callsignLines);
-
-        // 加载QTH词典
-        const qthRes = await fetch(qthDictURL);
-        const qthText = await qthRes.text();
-        const qthLines = qthText.split(/\r?\n/).filter(l => l.trim());
-        updateQTHDict(qthLines);
-
       } catch (err) {
         console.error("词典加载失败:", err);
       }
@@ -1257,34 +1494,6 @@
       antennaDict = Array.from(antennaSet).sort();
       renderDict("antennaList", antennaDict);
     }
-    
-    /**
-     * 更新呼号词典
-     * @param {Array} lines - 呼号名称数组
-     */
-    function updateCallsignDict(lines) {
-      const callsignSet = new Set(callsignDict);
-      lines.forEach(line => {
-        const item = line.trim();
-        if (item) callsignSet.add(item);
-      });
-      callsignDict = Array.from(callsignSet).sort();
-      renderDict("callsignList", callsignDict);
-    }
-
-/**
-     * 更新QTH词典
-     * @param {Array} lines - qth名称数组
-     */
-    function updateQTHDict(lines) {
-      const qthSet = new Set(qthDict);
-      lines.forEach(line => {
-        const item = line.trim();
-        if (item) qthSet.add(item);
-      });
-      qthDict = Array.from(qthSet).sort();
-      renderDict("qthList", qthDict);
-    }
 
     /*********************
      * 页面初始化
@@ -1298,8 +1507,6 @@
       // 渲染词典和表格
       renderDict("deviceList", deviceDict);
       renderDict("antennaList", antennaDict);
-      renderDict("callsignList", callsignDict);
-      renderDict("qthList", qthDict);
       renderTable();
       updateLogCount();
 
@@ -1310,8 +1517,6 @@
       window.addEventListener('beforeunload', () => {
         localStorage.removeItem('deviceDict');
         localStorage.removeItem('antennaDict');
-        localStorage.removeItem('callsignDict');
-        localStorage.removeItem('qthDict');
       });
     });
 
