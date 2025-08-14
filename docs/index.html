@@ -184,15 +184,14 @@
         <input id="controller" placeholder="主控呼号" />
         <input id="callsign" list="callsignList" placeholder="点名呼号" />
         <input id="device" list="deviceList" placeholder="设备" />
+        <input id="antenna" list="antennaList" placeholder="天线" />
         <input id="power" placeholder="功率" />
         <input id="qth" list="qthList" placeholder="QTH" />
         <input id="height" placeholder="高度" />
         <input id="time" placeholder="时间" />
         <input id="report" placeholder="信号报告" value="59" />
-        <input id="antenna" list="antennaList" placeholder="天线" />
       </div>
       <div class="form-row">
-        <button onclick="clearLog()">清空记录</button>
         <button onclick="addLog()" id="addLogBtn">添加记录</button>
         <button id="undoBtn" onclick="undoLastLog()" disabled>撤销操作</button>
       </div>
@@ -219,6 +218,7 @@
           </thead>
           <tbody></tbody>
         </table>
+        <button onclick="clearLog()">清空所有记录</button>
       </div>
     </div>
 
@@ -938,6 +938,8 @@
     async function loadDictionaries() {
       const deviceDictURL = "/device.txt";
       const antennaDictURL = "/antenna.txt";
+      const qthDictURL = "/qth.txt";
+      const callsignDictURL = "/callsign.txt";
 
       try {
         // 加载设备词典
