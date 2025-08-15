@@ -1436,11 +1436,26 @@
         const deviceLines = deviceText.split(/\r?\n/).filter(l => l.trim());
         updateDeviceDict(deviceLines);
 
+        // 加载呼号词典
+        const callsignRes = await fetch(callsignDictURL);
+        const callsignText = await callsignRes.text();
+        const callsignLines = callsignText.split(/\r?\n/).filter(l => l.trim());
+        updateCallsignDict(callsignLines);
+
+
         // 加载天线词典
         const antennaRes = await fetch(antennaDictURL);
         const antennaText = await antennaRes.text();
         const antennaLines = antennaText.split(/\r?\n/).filter(l => l.trim());
         updateAntennaDict(antennaLines);
+
+        // 加载QTH词典
+        const qthRes = await fetch(qthDictURL);
+        const qthText = await qthRes.text();
+        const qthLines = qthText.split(/\r?\n/).filter(l => l.trim());
+        updateQthDict(qthLines);
+
+
       } catch (err) {
         console.error("词典加载失败:", err);
       }
@@ -1474,6 +1489,34 @@
       renderDict("antennaList", antennaDict);
     }
 
+    /**
+     * 更新呼号词典
+     * @param {Array} lines - 呼号名称数组
+     */
+    function updateCallsignDict(lines) {
+      const callsignSet = new Set(callsignDict);
+      lines.forEach(line => {
+        const item = line.trim();
+        if (item) callsignSet.add(item);
+      });
+      callsignDict = Array.from(callsignSet).sort();
+      renderDict("callsignList", callsignDict);
+    }
+
+    /**
+     * 更新QTH词典
+     * @param {Array} lines - QTH名称数组
+     */
+    function updateQthDict(lines) {
+      const qthSet = new Set(qthDict);
+      lines.forEach(line => {
+        const item = line.trim();
+        if (item) qthSet.add(item);
+      });
+      qthDict = Array.from(qthSet).sort();
+      renderDict("qthList", qthDict);
+    }
+
     /*********************
      * 页面初始化
      *********************/
@@ -1486,6 +1529,8 @@
       // 渲染词典和表格
       renderDict("deviceList", deviceDict);
       renderDict("antennaList", antennaDict);
+      renderDict("callsignList", callsignDict);
+      renderDict("qthList", qthDict);
       renderTable();
       updateLogCount();
 
@@ -1496,6 +1541,8 @@
       window.addEventListener('beforeunload', () => {
         localStorage.removeItem('deviceDict');
         localStorage.removeItem('antennaDict');
+        localStorage.removeItem('callsignDict');
+        localStorage.removeItem('qthDict');
       });
     });
 
