@@ -1552,6 +1552,22 @@
         btn.disabled = logData.length === 0;
       }
     }
+
+
+    document.getElementById('controller').addEventListener('input', function() {
+      const start = this.selectionStart;
+      const end = this.selectionEnd;
+      this.value = this.value.toUpperCase();
+      this.setSelectionRange(start, end);
+    });
+
+    document.getElementById('callsign').addEventListener('input', function() {
+      const start = this.selectionStart;
+      const end = this.selectionEnd;
+      this.value = this.value.toUpperCase();
+      this.setSelectionRange(start, end);
+    });
+
   </script>
 </body>
 </html>
