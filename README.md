@@ -7,6 +7,10 @@ P.S.在访问本网站时请尽量使用chromium内核的浏览器
 
 **体验本项目**
 
+**在BR5AI中继台使用本项目？**
+
+请访问此仓库！[BG5CRL-Log-tool-BR5AI](https://github.com/Mazha0309/BG5CRL-Log-tool-BR5AI)
+
 **测试文件**:
 [BR5AI首次点名记录JSON文件](https://github.com/Mazha0309/BG5CRL-Log-tool/blob/521e45eaaed84936c9d74cd10a7812f2abc9078a/BR5AI%E4%B8%AD%E7%BB%A7%E5%8F%B0%E7%BD%91%E7%82%B9%E5%90%8D%E8%AE%B0%E5%BD%95%E8%A1%A8.json)
 在本项目网页中导入JSON文件即可体验
