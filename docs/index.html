@@ -792,9 +792,8 @@
           }
         };
         actionTd.appendChild(deleteBtn);
-
         tr.appendChild(actionTd);
-        tbody.appendChild(tr);
+        tbody.insertBefore(tr,tbody.firstChild);
       });
 
       updateUndoButton();
