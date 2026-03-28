@@ -1,5 +1,8 @@
 # 业余无线电点名记录工具
 
+迁移至OpenLogTool
+[OpenLogTool](https://github.com/Mazha0309/OpenLogTool)
+
 **访问地址**:  
 [https://mazha0309.eu.org/](https://mazha0309.eu.org/)
 
@@ -10,8 +13,6 @@ P.S.在访问本网站时请尽量使用chromium内核的浏览器
 **在BR5AI中继台使用本项目？**
 
 请访问此仓库！[BG5CRL-Log-tool-BR5AI](https://github.com/Mazha0309/BG5CRL-Log-tool-BR5AI)
-
-**本人因学业繁忙和技术水平有限，请有需要更多功能的用户转移至由BG5EGG开发的工具，https://github.com/IamKenae/HAMTool**
 
 **测试文件**:
 [BR5AI首次点名记录JSON文件](https://github.com/Mazha0309/BG5CRL-Log-tool/blob/521e45eaaed84936c9d74cd10a7812f2abc9078a/BR5AI%E4%B8%AD%E7%BB%A7%E5%8F%B0%E7%BD%91%E7%82%B9%E5%90%8D%E8%AE%B0%E5%BD%95%E8%A1%A8.json)
