@@ -1,6 +1,6 @@
 # 业余无线电点名记录工具
 
-迁移至OpenLogTool
+迁移至
 [OpenLogTool](https://github.com/Mazha0309/OpenLogTool)
 
 **访问地址**:  
